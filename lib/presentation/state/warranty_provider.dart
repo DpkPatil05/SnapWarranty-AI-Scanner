@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/entities/warranty_item.dart';
 import '../../domain/repositories/warranty_repository.dart';
@@ -14,8 +15,14 @@ final databaseProvider = Provider<AppDatabase>((ref) {
 
 // --- 2. Data Sources ---
 final geminiDataSourceProvider = Provider((ref) {
-  // ⚠️ IMPORTANT: Paste your actual Gemini API key from Google AI Studio here
-  return GeminiRemoteDataSource(apiKey: 'YOUR_GEMINI_API_KEY_HERE');
+  // Read the key from the hidden .env file
+  final apiKey = dotenv.env['GEMINI_API_KEY'];
+
+  if (apiKey == null) {
+    throw Exception('GEMINI_API_KEY not found in .env file');
+  }
+
+  return GeminiRemoteDataSource(apiKey: apiKey);
 });
 
 final warrantyDaoProvider = Provider((ref) {
