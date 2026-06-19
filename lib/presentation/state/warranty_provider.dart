@@ -1,81 +1,73 @@
 import 'dart:io';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../domain/entities/warranty_item.dart';
 import '../../domain/repositories/warranty_repository.dart';
 import '../../data/repositories/warranty_repository_impl.dart';
 import '../../data/datasources/local/database/app_database.dart';
+import '../../data/datasources/local/dao/warranty_dao.dart';
 import '../../data/datasources/remote/gemini_remote_datasource.dart';
 
+part 'warranty_provider.g.dart';
+
 // --- 1. Database Provider ---
-// We define this here, but we will override it in main.dart after it finishes initializing async.
-final databaseProvider = Provider<AppDatabase>((ref) {
-  throw UnimplementedError('databaseProvider must be overridden in main.dart');
-});
+@Riverpod(keepAlive: true)
+AppDatabase database(Ref ref) {
+  final db = AppDatabase();
+  ref.onDispose(() => db.close());
+  return db;
+}
 
 // --- 2. Data Sources ---
-final geminiDataSourceProvider = Provider((ref) {
-  // Read the key from the hidden .env file
-  final apiKey = dotenv.env['GEMINI_API_KEY'];
+@riverpod
+GeminiRemoteDataSource geminiDataSource(Ref ref) {
+  return GeminiRemoteDataSource();
+}
 
-  if (apiKey == null) {
-    throw Exception('GEMINI_API_KEY not found in .env file');
-  }
-
-  return GeminiRemoteDataSource(apiKey: apiKey);
-});
-
-final warrantyDaoProvider = Provider((ref) {
-  return ref.watch(databaseProvider).warrantyDao;
-});
+@riverpod
+WarrantyDao warrantyDao(Ref ref) {
+  final db = ref.watch(databaseProvider);
+  return WarrantyDao(db);
+}
 
 // --- 3. Repository ---
-final warrantyRepositoryProvider = Provider<WarrantyRepository>((ref) {
+@riverpod
+WarrantyRepository warrantyRepository(Ref ref) {
   return WarrantyRepositoryImpl(
     remoteDataSource: ref.watch(geminiDataSourceProvider),
     localDao: ref.watch(warrantyDaoProvider),
   );
-});
+}
 
-// --- 4. State Notifier ---
-class WarrantyNotifier extends StateNotifier<AsyncValue<List<WarrantyItem>>> {
-  final WarrantyRepository _repository;
-
-  WarrantyNotifier(this._repository) : super(const AsyncValue.loading()) {
-    loadWarranties(); // Automatically fetch from Floor DB on startup
+// --- 4. Notifier ---
+@riverpod
+class WarrantyList extends _$WarrantyList {
+  @override
+  FutureOr<List<WarrantyItem>> build() async {
+    final repository = ref.watch(warrantyRepositoryProvider);
+    return repository.getAllWarranties();
   }
 
-  Future<void> loadWarranties() async {
+  Future<void> scanAndAddWarranty(File image) async {
+    state = const AsyncValue.loading();
     try {
-      final items = await _repository.getAllWarranties();
-      state = AsyncValue.data(items);
+      final repository = ref.read(warrantyRepositoryProvider);
+      final newItem = await repository.extractWarrantyFromImage(image);
+      await repository.saveWarranty(newItem);
+      
+      // Refresh state
+      ref.invalidateSelf();
     } catch (e, st) {
       state = AsyncValue.error(e, st);
     }
   }
 
-  Future<void> scanAndAddWarranty(File image) async {
-    state = const AsyncValue.loading(); // Triggers the loading spinner in UI
+  Future<void> deleteWarranty(String id) async {
     try {
-      final newItem = await _repository.extractWarrantyFromImage(image);
-      await _repository.saveWarranty(newItem);
-      await loadWarranties(); // Refresh the list
+      final repository = ref.read(warrantyRepositoryProvider);
+      await repository.deleteWarranty(id);
+      ref.invalidateSelf();
     } catch (e, st) {
-      state = AsyncValue.error("Failed to parse receipt: $e", st);
-      await loadWarranties(); // Revert to previous list if it fails
+      state = AsyncValue.error(e, st);
     }
   }
-
-  Future<void> deleteWarranty(String id) async {
-    await _repository.deleteWarranty(id);
-    await loadWarranties();
-  }
 }
-
-// --- 5. The Provider the UI will listen to ---
-final warrantyListProvider =
-    StateNotifierProvider<WarrantyNotifier, AsyncValue<List<WarrantyItem>>>((
-      ref,
-    ) {
-      return WarrantyNotifier(ref.watch(warrantyRepositoryProvider));
-    });

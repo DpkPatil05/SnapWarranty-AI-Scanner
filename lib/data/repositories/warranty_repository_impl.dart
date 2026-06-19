@@ -8,7 +8,7 @@ import '../models/warranty_item_model.dart';
 
 class WarrantyRepositoryImpl implements WarrantyRepository {
   final GeminiRemoteDataSource remoteDataSource;
-  final WarrantyDao localDao; // Changed from HiveLocalDataSource
+  final WarrantyDao localDao;
 
   WarrantyRepositoryImpl({
     required this.remoteDataSource,
@@ -24,13 +24,20 @@ class WarrantyRepositoryImpl implements WarrantyRepository {
 
   @override
   Future<void> saveWarranty(WarrantyItem item) async {
-    final model = item as WarrantyItemModel;
-    await localDao.insertWarranty(model); // Using Floor's DAO
+    final model = WarrantyItemModel(
+      id: item.id,
+      productName: item.productName,
+      purchaseDate: item.purchaseDate,
+      warrantyDurationMonths: item.warrantyDurationMonths,
+      receiptImagePath: item.receiptImagePath,
+    );
+    await localDao.insertWarranty(model.toEntry());
   }
 
   @override
   Future<List<WarrantyItem>> getAllWarranties() async {
-    return await localDao.findAllWarranties(); // Using Floor's DAO
+    final entries = await localDao.findAllWarranties();
+    return entries.map((e) => WarrantyItemModel.fromEntry(e)).toList();
   }
 
   @override

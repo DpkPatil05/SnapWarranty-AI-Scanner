@@ -1,4 +1,4 @@
-package com.deepx.snap_warranty.snap_warranty
+package com.deepx.snap_warranty
 
 import io.flutter.embedding.android.FlutterActivity
 
