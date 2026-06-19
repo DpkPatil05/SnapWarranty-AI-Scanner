@@ -1,17 +1,22 @@
-import 'package:floor/floor.dart';
-import '../../../models/warranty_item_model.dart';
+import 'package:drift/drift.dart';
+import '../database/app_database.dart';
+import '../tables/warranty_table.dart';
 
-@dao
-abstract class WarrantyDao {
-  @Query('SELECT * FROM warranties')
-  Future<List<WarrantyItemModel>> findAllWarranties();
+part 'warranty_dao.g.dart';
 
-  @Query('SELECT * FROM warranties WHERE id = :id')
-  Stream<WarrantyItemModel?> findWarrantyById(String id);
+@DriftAccessor(tables: [Warranties])
+class WarrantyDao extends DatabaseAccessor<AppDatabase> with _$WarrantyDaoMixin {
+  WarrantyDao(super.db);
 
-  @insert
-  Future<void> insertWarranty(WarrantyItemModel warranty);
+  Future<List<WarrantyEntry>> findAllWarranties() => select(warranties).get();
 
-  @Query('DELETE FROM warranties WHERE id = :id')
-  Future<void> deleteWarrantyById(String id);
+  Stream<WarrantyEntry?> findWarrantyById(String id) {
+    return (select(warranties)..where((t) => t.id.equals(id))).watchSingleOrNull();
+  }
+
+  Future<void> insertWarranty(WarrantyEntry entry) => into(warranties).insert(entry, mode: InsertMode.insertOrReplace);
+
+  Future<void> deleteWarrantyById(String id) {
+    return (delete(warranties)..where((t) => t.id.equals(id))).go();
+  }
 }

@@ -1,16 +1,27 @@
-// ignore_for_file: experimental_api
-import 'dart:async';
-import 'package:floor/floor.dart';
-import 'package:sqflite/sqflite.dart' as sqflite;
+import 'dart:io';
 
-import '../../../models/warranty_item_model.dart';
-import '../converters/datetime_converter.dart';
+import 'package:drift/drift.dart';
+import 'package:drift/native.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as p;
+
 import '../dao/warranty_dao.dart';
+import '../tables/warranty_table.dart';
 
 part 'app_database.g.dart';
 
-@TypeConverters([DateTimeConverter])
-@Database(version: 1, entities: [WarrantyItemModel])
-abstract class AppDatabase extends FloorDatabase {
-  WarrantyDao get warrantyDao;
+@DriftDatabase(tables: [Warranties], daos: [WarrantyDao])
+class AppDatabase extends _$AppDatabase {
+  AppDatabase() : super(_openConnection());
+
+  @override
+  int get schemaVersion => 1;
+}
+
+LazyDatabase _openConnection() {
+  return LazyDatabase(() async {
+    final dbFolder = await getApplicationDocumentsDirectory();
+    final file = File(p.join(dbFolder.path, 'db.sqlite'));
+    return NativeDatabase.createInBackground(file);
+  });
 }

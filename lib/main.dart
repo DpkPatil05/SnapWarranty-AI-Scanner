@@ -1,25 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'data/datasources/local/database/app_database.dart';
-import 'presentation/state/warranty_provider.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_app_check/firebase_app_check.dart';
 import 'presentation/app.dart';
+import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Load the environment variables BEFORE anything else
+  // Load the environment variables
   await dotenv.load(fileName: ".env");
 
-  // Initialize the Floor SQLite database
-  final database = await $FloorAppDatabase
-      .databaseBuilder('app_database.db')
-      .build();
+  // Initialize Firebase
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
-  runApp(
-    ProviderScope(
-      overrides: [databaseProvider.overrideWithValue(database)],
-      child: const SnapWarrantyApp(),
-    ),
+  // Initialize App Check (Critical for Gemini security in 2026)
+  await FirebaseAppCheck.instance.activate(
+    providerAndroid: AndroidPlayIntegrityProvider(),
+    providerApple: AppleAppAttestWithDeviceCheckFallbackProvider(),
   );
+
+  runApp(const ProviderScope(child: SnapWarrantyApp()));
 }

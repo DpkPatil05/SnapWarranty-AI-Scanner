@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1077184882408",
+    "project_id": "snapwarranty-ai-scanner",
+    "storage_bucket": "snapwarranty-ai-scanner.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1077184882408:android:b5851302190489eca50b5d",
+        "android_client_info": {
+          "package_name": "com.deepx.snap_warranty"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBzU-NkPQgnYRbW0LerodQNdHd3E-BZF14"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

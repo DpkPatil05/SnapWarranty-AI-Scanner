@@ -1,7 +1,6 @@
-import 'package:floor/floor.dart';
 import '../../domain/entities/warranty_item.dart';
+import '../datasources/local/database/app_database.dart';
 
-@Entity(tableName: 'warranties', primaryKeys: ['id'])
 class WarrantyItemModel extends WarrantyItem {
   WarrantyItemModel({
     required super.id,
@@ -22,6 +21,26 @@ class WarrantyItemModel extends WarrantyItem {
       purchaseDate: DateTime.parse(json['purchaseDate']),
       warrantyDurationMonths: json['warrantyDurationMonths'] ?? 12,
       receiptImagePath: imagePath,
+    );
+  }
+
+  factory WarrantyItemModel.fromEntry(WarrantyEntry entry) {
+    return WarrantyItemModel(
+      id: entry.id,
+      productName: entry.productName,
+      purchaseDate: entry.purchaseDate,
+      warrantyDurationMonths: entry.warrantyDurationMonths,
+      receiptImagePath: entry.receiptImagePath,
+    );
+  }
+
+  WarrantyEntry toEntry() {
+    return WarrantyEntry(
+      id: id,
+      productName: productName,
+      purchaseDate: purchaseDate,
+      warrantyDurationMonths: warrantyDurationMonths,
+      receiptImagePath: receiptImagePath,
     );
   }
 }
