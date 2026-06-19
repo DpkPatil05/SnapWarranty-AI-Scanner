@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'pages/home_page.dart';
+import 'pages/home/home_page.dart';
 
 class SnapWarrantyApp extends StatelessWidget {
   const SnapWarrantyApp({super.key});
@@ -10,8 +10,11 @@ class SnapWarrantyApp extends StatelessWidget {
       title: 'SnapWarranty',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFF6366F1),
+          brightness: Brightness.dark,
+        ),
       ),
       home: const HomePage(),
     );
