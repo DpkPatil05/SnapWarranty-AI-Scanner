@@ -1,22 +1,23 @@
 import 'dart:convert';
+import 'dart:developer' as dev;
 import 'dart:io';
-import 'package:firebase_ai/firebase_ai.dart';
+import 'package:google_generative_ai/google_generative_ai.dart';
 
 class GeminiRemoteDataSource {
   final GenerativeModel _model;
 
-  GeminiRemoteDataSource()
-      : _model = FirebaseAI.googleAI().generativeModel(
-          model: 'gemini-1.5-flash',
-        );
+  GeminiRemoteDataSource({required String apiKey})
+    : _model = GenerativeModel(model: 'gemini-1.5-flash', apiKey: apiKey);
 
   Future<Map<String, dynamic>> extractDataFromReceipt(File image) async {
+    dev.log('extractDataFromReceipt: Reading bytes', name: 'GeminiRemote');
     try {
       final bytes = await image.readAsBytes();
-      
+
       // Determine mime type based on file extension
       final extension = image.path.split('.').last.toLowerCase();
       final mimeType = extension == 'png' ? 'image/png' : 'image/jpeg';
+      dev.log('MimeType: $mimeType', name: 'GeminiRemote');
 
       final prompt = '''
         Analyze this receipt/invoice image. 
@@ -35,21 +36,32 @@ class GeminiRemoteDataSource {
       ''';
 
       final content = [
-        Content.multi([
-          TextPart(prompt),
-          InlineDataPart(mimeType, bytes),
-        ])
+        Content.multi([TextPart(prompt), DataPart(mimeType, bytes)]),
       ];
 
+      dev.log(
+        'Generating content via Direct Gemini SDK...',
+        name: 'GeminiRemote',
+      );
       final response = await _model.generateContent(content);
       final responseText = response.text?.trim() ?? '{}';
+      dev.log('Raw response received', name: 'GeminiRemote');
 
       // Clean up the response in case the model included markdown blocks
-      final cleanedJson = responseText.replaceFirst('```json', '').replaceFirst('```', '').trim();
-      
+      final cleanedJson = responseText
+          .replaceFirst('```json', '')
+          .replaceFirst('```', '')
+          .trim();
+
       return jsonDecode(cleanedJson) as Map<String, dynamic>;
-    } catch (e) {
-      throw Exception('Failed to extract data via Firebase AI: $e');
+    } catch (e, st) {
+      dev.log(
+        'Error in extractDataFromReceipt',
+        name: 'GeminiRemote',
+        error: e,
+        stackTrace: st,
+      );
+      throw Exception('Failed to extract data via Direct Gemini SDK: $e');
     }
   }
 }

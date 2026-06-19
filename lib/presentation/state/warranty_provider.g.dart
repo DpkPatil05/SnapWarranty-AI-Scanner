@@ -95,7 +95,7 @@ final class GeminiDataSourceProvider
   }
 }
 
-String _$geminiDataSourceHash() => r'daa542278a96de84c95a7dc865fc57e90065a06f';
+String _$geminiDataSourceHash() => r'cb7f2cae3d3b97a9152581787115533a527ca097';
 
 @ProviderFor(warrantyDao)
 final warrantyDaoProvider = WarrantyDaoProvider._();
@@ -210,7 +210,7 @@ final class WarrantyListProvider
   WarrantyList create() => WarrantyList();
 }
 
-String _$warrantyListHash() => r'59149cd4d2da8dac5fe1dd6d5a21a2d2f5553477';
+String _$warrantyListHash() => r'8c230bef100fe90ec2bb6f36ebb82e83eebf87bf';
 
 abstract class _$WarrantyList extends $AsyncNotifier<List<WarrantyItem>> {
   FutureOr<List<WarrantyItem>> build();

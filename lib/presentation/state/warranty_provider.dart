@@ -1,4 +1,6 @@
 import 'dart:io';
+import 'dart:developer' as dev;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../domain/entities/warranty_item.dart';
 import '../../domain/repositories/warranty_repository.dart';
@@ -20,7 +22,11 @@ AppDatabase database(Ref ref) {
 // --- 2. Data Sources ---
 @riverpod
 GeminiRemoteDataSource geminiDataSource(Ref ref) {
-  return GeminiRemoteDataSource();
+  final apiKey = dotenv.env['GEMINI_API_KEY'];
+  if (apiKey == null) {
+    throw Exception('GEMINI_API_KEY not found in .env file');
+  }
+  return GeminiRemoteDataSource(apiKey: apiKey);
 }
 
 @riverpod
@@ -48,25 +54,35 @@ class WarrantyList extends _$WarrantyList {
   }
 
   Future<void> scanAndAddWarranty(File image) async {
+    dev.log('Starting scanAndAddWarranty', name: 'WarrantyList');
     state = const AsyncValue.loading();
     try {
       final repository = ref.read(warrantyRepositoryProvider);
+      dev.log('Extracting warranty from image...', name: 'WarrantyList');
       final newItem = await repository.extractWarrantyFromImage(image);
+      dev.log('Extraction success: ${newItem.productName}', name: 'WarrantyList');
+      
+      dev.log('Saving warranty to local DB...', name: 'WarrantyList');
       await repository.saveWarranty(newItem);
+      dev.log('Save success', name: 'WarrantyList');
       
       // Refresh state
       ref.invalidateSelf();
     } catch (e, st) {
+      dev.log('Error in scanAndAddWarranty', name: 'WarrantyList', error: e, stackTrace: st);
       state = AsyncValue.error(e, st);
     }
   }
 
   Future<void> deleteWarranty(String id) async {
+    dev.log('Deleting warranty: $id', name: 'WarrantyList');
     try {
       final repository = ref.read(warrantyRepositoryProvider);
       await repository.deleteWarranty(id);
+      dev.log('Delete success', name: 'WarrantyList');
       ref.invalidateSelf();
     } catch (e, st) {
+      dev.log('Error in deleteWarranty', name: 'WarrantyList', error: e, stackTrace: st);
       state = AsyncValue.error(e, st);
     }
   }
