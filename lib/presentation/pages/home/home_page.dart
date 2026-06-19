@@ -13,6 +13,24 @@ class HomePage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final warrantiesAsync = ref.watch(warrantyListProvider);
 
+    // 2. Listen for errors to show SnackBar
+    ref.listen(warrantyListProvider, (previous, next) {
+      next.whenOrNull(
+        error: (error, stackTrace) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error: $error'),
+              backgroundColor: Colors.redAccent.withValues(alpha: 0.8),
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+          );
+        },
+      );
+    });
+
     return Scaffold(
       body: Stack(
         children: [
@@ -47,14 +65,9 @@ class HomePage extends ConsumerWidget {
                       child: CircularProgressIndicator(color: Colors.white),
                     ),
                   ),
-                  error: (e, _) => SliverFillRemaining(
-                    child: Center(
-                      child: Text(
-                        'Error: $e',
-                        style: const TextStyle(color: Colors.white),
-                      ),
-                    ),
-                  ),
+                  error: (e, _) => warrantiesAsync.hasValue
+                      ? _buildWarrantyList(warrantiesAsync.value!)
+                      : _buildEmptyState(), // Errors are now in SnackBar
                 ),
               ],
             ),
@@ -133,57 +146,55 @@ class HomePage extends ConsumerWidget {
     return SliverPadding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       sliver: SliverList(
-        delegate: SliverChildBuilderDelegate(
-          (context, index) {
-            final item = warranties[index];
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 16),
-              child: GlassContainer(
-                child: Row(
-                  children: [
-                    Container(
-                      width: 60,
-                      height: 60,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: const Icon(Icons.inventory_2, color: Colors.white),
+        delegate: SliverChildBuilderDelegate((context, index) {
+          final item = warranties[index];
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 16),
+            child: GlassContainer(
+              child: Row(
+                children: [
+                  Container(
+                    width: 60,
+                    height: 60,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(16),
                     ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            item.productName,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
+                    child: const Icon(Icons.inventory_2, color: Colors.white),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          item.productName,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
                           ),
-                          Text(
-                            'Expires: ${item.expirationDate.toString().split(' ')[0]}',
-                            style: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.6),
-                            ),
+                        ),
+                        Text(
+                          'Expires: ${item.expirationDate.toString().split(' ')[0]}',
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.6),
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
-                    Icon(
-                      item.isExpired ? Icons.warning : Icons.verified,
-                      color:
-                          item.isExpired ? Colors.orangeAccent : Colors.greenAccent,
-                    ),
-                  ],
-                ),
+                  ),
+                  Icon(
+                    item.isExpired ? Icons.warning : Icons.verified,
+                    color: item.isExpired
+                        ? Colors.orangeAccent
+                        : Colors.greenAccent,
+                  ),
+                ],
               ),
-            );
-          },
-          childCount: warranties.length,
-        ),
+            ),
+          );
+        }, childCount: warranties.length),
       ),
     );
   }
@@ -272,7 +283,10 @@ class HomePage extends ConsumerWidget {
   }
 
   Future<void> _pickImage(
-      WidgetRef ref, ImageSource source, BuildContext context) async {
+    WidgetRef ref,
+    ImageSource source,
+    BuildContext context,
+  ) async {
     Navigator.pop(context); // Close bottom sheet
     final picker = ImagePicker();
     final image = await picker.pickImage(source: source);
