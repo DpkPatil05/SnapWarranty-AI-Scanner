@@ -86,4 +86,17 @@ class WarrantyList extends _$WarrantyList {
       state = AsyncValue.error(e, st);
     }
   }
+
+  Future<void> updateWarranty(WarrantyItem item) async {
+    dev.log('Updating warranty: ${item.id}', name: 'WarrantyList');
+    try {
+      final repository = ref.read(warrantyRepositoryProvider);
+      await repository.updateWarranty(item);
+      dev.log('Update success', name: 'WarrantyList');
+      ref.invalidateSelf();
+    } catch (e, st) {
+      dev.log('Error in updateWarranty', name: 'WarrantyList', error: e, stackTrace: st);
+      state = AsyncValue.error(e, st);
+    }
+  }
 }

@@ -44,4 +44,18 @@ class WarrantyRepositoryImpl implements WarrantyRepository {
   Future<void> deleteWarranty(String id) async {
     await localDao.deleteWarrantyById(id);
   }
+
+  @override
+  Future<void> updateWarranty(WarrantyItem item) async {
+    final model = WarrantyItemModel(
+      id: item.id,
+      productName: item.productName,
+      purchaseDate: item.purchaseDate,
+      warrantyDurationMonths: item.warrantyDurationMonths,
+      receiptImagePath: item.receiptImagePath,
+    );
+    await localDao.insertWarranty(
+      model.toEntry(),
+    ); // insertOrReplace handles update
+  }
 }

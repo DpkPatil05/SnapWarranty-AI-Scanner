@@ -7,57 +7,59 @@ class GeminiRemoteDataSource {
   final GenerativeModel _model;
 
   GeminiRemoteDataSource({required String apiKey})
-      : _model = GenerativeModel(
-          // Upgrading to Gemini 3.5 Flash - The current 2026 standard
-          // The previous 'quota' error was actually due to model retirement of 2.0
-          model: 'gemini-3.5-flash',
-          apiKey: apiKey,
-        );
+    : _model = GenerativeModel(model: 'gemini-3.5-flash', apiKey: apiKey);
 
   Future<Map<String, dynamic>> extractDataFromReceipt(File image) async {
     dev.log('extractDataFromReceipt: Reading bytes', name: 'GeminiRemote');
     try {
       final bytes = await image.readAsBytes();
-      
-      // Determine mime type based on file extension
+
       final extension = image.path.split('.').last.toLowerCase();
       final mimeType = extension == 'png' ? 'image/png' : 'image/jpeg';
-      dev.log('MimeType: $mimeType', name: 'GeminiRemote');
 
       final prompt = '''
         Analyze this receipt/invoice image. 
         Extract the following information:
         1. Product Name (be specific, e.g., "Logitech G502 Mouse")
         2. Date of Purchase (format as YYYY-MM-DD)
-        3. Warranty Duration in months (estimate if not explicitly stated, e.g., 12 for most electronics)
+        3. Warranty Duration in months: 
+           - ONLY extract this if it is EXPLICITLY mentioned in the receipt.
+           - If it is not mentioned, return null for this field. 
+           - DO NOT guess or estimate.
 
         Return ONLY a valid JSON object with this structure:
         {
           "productName": "string",
           "purchaseDate": "YYYY-MM-DD",
-          "warrantyDurationMonths": number
+          "warrantyDurationMonths": number or null
         }
         Do not include any markdown formatting, backticks, or extra text.
       ''';
 
       final content = [
-        Content.multi([
-          TextPart(prompt),
-          DataPart(mimeType, bytes),
-        ])
+        Content.multi([TextPart(prompt), DataPart(mimeType, bytes)]),
       ];
 
-      dev.log('Generating content via Gemini 3.5 Flash...', name: 'GeminiRemote');
+      dev.log(
+        'Generating content via Gemini 3.5 Flash...',
+        name: 'GeminiRemote',
+      );
       final response = await _model.generateContent(content);
       final responseText = response.text?.trim() ?? '{}';
-      dev.log('Raw response received', name: 'GeminiRemote');
 
-      // Clean up the response in case the model included markdown blocks
-      final cleanedJson = responseText.replaceFirst('```json', '').replaceFirst('```', '').trim();
-      
+      final cleanedJson = responseText
+          .replaceFirst('```json', '')
+          .replaceFirst('```', '')
+          .trim();
+
       return jsonDecode(cleanedJson) as Map<String, dynamic>;
     } catch (e, st) {
-      dev.log('Error in extractDataFromReceipt', name: 'GeminiRemote', error: e, stackTrace: st);
+      dev.log(
+        'Error in extractDataFromReceipt',
+        name: 'GeminiRemote',
+        error: e,
+        stackTrace: st,
+      );
       throw Exception('Failed to extract data via Gemini 3.5: $e');
     }
   }

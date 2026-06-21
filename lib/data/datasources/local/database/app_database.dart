@@ -15,7 +15,23 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2; // Bumped version to 2 to trigger migration
+
+  @override
+  MigrationStrategy get migration {
+    return MigrationStrategy(
+      onCreate: (m) async {
+        await m.createAll();
+      },
+      onUpgrade: (m, from, to) async {
+        if (from < 2) {
+          // If the user already has version 1, we must handle the change to nullable duration
+          // Drift's m.alterTable can handle column changes
+          await m.alterTable(TableMigration(warranties));
+        }
+      },
+    );
+  }
 }
 
 LazyDatabase _openConnection() {
