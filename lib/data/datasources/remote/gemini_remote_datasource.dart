@@ -7,7 +7,11 @@ class GeminiRemoteDataSource {
   final GenerativeModel _model;
 
   GeminiRemoteDataSource({required String apiKey})
-    : _model = GenerativeModel(model: 'gemini-1.5-flash', apiKey: apiKey);
+    : _model = GenerativeModel(
+        // Upgrading to the stable Gemini 2.0 Flash - the 2026 standard
+        model: 'gemini-2.0-flash',
+        apiKey: apiKey,
+      );
 
   Future<Map<String, dynamic>> extractDataFromReceipt(File image) async {
     dev.log('extractDataFromReceipt: Reading bytes', name: 'GeminiRemote');
@@ -40,7 +44,7 @@ class GeminiRemoteDataSource {
       ];
 
       dev.log(
-        'Generating content via Direct Gemini SDK...',
+        'Generating content via Gemini 2.0 Flash...',
         name: 'GeminiRemote',
       );
       final response = await _model.generateContent(content);
@@ -61,7 +65,7 @@ class GeminiRemoteDataSource {
         error: e,
         stackTrace: st,
       );
-      throw Exception('Failed to extract data via Direct Gemini SDK: $e');
+      throw Exception('Failed to extract data via Gemini 2.0: $e');
     }
   }
 }
