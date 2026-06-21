@@ -7,17 +7,18 @@ class GeminiRemoteDataSource {
   final GenerativeModel _model;
 
   GeminiRemoteDataSource({required String apiKey})
-    : _model = GenerativeModel(
-        // Upgrading to the stable Gemini 2.0 Flash - the 2026 standard
-        model: 'gemini-2.0-flash',
-        apiKey: apiKey,
-      );
+      : _model = GenerativeModel(
+          // Upgrading to Gemini 3.5 Flash - The current 2026 standard
+          // The previous 'quota' error was actually due to model retirement of 2.0
+          model: 'gemini-3.5-flash',
+          apiKey: apiKey,
+        );
 
   Future<Map<String, dynamic>> extractDataFromReceipt(File image) async {
     dev.log('extractDataFromReceipt: Reading bytes', name: 'GeminiRemote');
     try {
       final bytes = await image.readAsBytes();
-
+      
       // Determine mime type based on file extension
       final extension = image.path.split('.').last.toLowerCase();
       final mimeType = extension == 'png' ? 'image/png' : 'image/jpeg';
@@ -40,32 +41,24 @@ class GeminiRemoteDataSource {
       ''';
 
       final content = [
-        Content.multi([TextPart(prompt), DataPart(mimeType, bytes)]),
+        Content.multi([
+          TextPart(prompt),
+          DataPart(mimeType, bytes),
+        ])
       ];
 
-      dev.log(
-        'Generating content via Gemini 2.0 Flash...',
-        name: 'GeminiRemote',
-      );
+      dev.log('Generating content via Gemini 3.5 Flash...', name: 'GeminiRemote');
       final response = await _model.generateContent(content);
       final responseText = response.text?.trim() ?? '{}';
       dev.log('Raw response received', name: 'GeminiRemote');
 
       // Clean up the response in case the model included markdown blocks
-      final cleanedJson = responseText
-          .replaceFirst('```json', '')
-          .replaceFirst('```', '')
-          .trim();
-
+      final cleanedJson = responseText.replaceFirst('```json', '').replaceFirst('```', '').trim();
+      
       return jsonDecode(cleanedJson) as Map<String, dynamic>;
     } catch (e, st) {
-      dev.log(
-        'Error in extractDataFromReceipt',
-        name: 'GeminiRemote',
-        error: e,
-        stackTrace: st,
-      );
-      throw Exception('Failed to extract data via Gemini 2.0: $e');
+      dev.log('Error in extractDataFromReceipt', name: 'GeminiRemote', error: e, stackTrace: st);
+      throw Exception('Failed to extract data via Gemini 3.5: $e');
     }
   }
 }
