@@ -6,7 +6,7 @@ class WarrantyItemModel extends WarrantyItem {
     required super.id,
     required super.productName,
     required super.purchaseDate,
-    required super.warrantyDurationMonths,
+    super.warrantyDurationMonths,
     super.receiptImagePath,
   });
 
@@ -18,8 +18,9 @@ class WarrantyItemModel extends WarrantyItem {
     return WarrantyItemModel(
       id: id,
       productName: json['productName'] ?? 'Unknown Product',
-      purchaseDate: DateTime.parse(json['purchaseDate']),
-      warrantyDurationMonths: json['warrantyDurationMonths'] ?? 12,
+      purchaseDate:
+          DateTime.tryParse(json['purchaseDate'] ?? '') ?? DateTime.now(),
+      warrantyDurationMonths: json['warrantyDurationMonths'], // Can be null
       receiptImagePath: imagePath,
     );
   }

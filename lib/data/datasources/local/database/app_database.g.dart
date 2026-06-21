@@ -46,9 +46,9 @@ class $WarrantiesTable extends Warranties
   late final GeneratedColumn<int> warrantyDurationMonths = GeneratedColumn<int>(
     'warranty_duration_months',
     aliasedName,
-    false,
+    true,
     type: DriftSqlType.int,
-    requiredDuringInsert: true,
+    requiredDuringInsert: false,
   );
   static const VerificationMeta _receiptImagePathMeta = const VerificationMeta(
     'receiptImagePath',
@@ -116,8 +116,6 @@ class $WarrantiesTable extends Warranties
           _warrantyDurationMonthsMeta,
         ),
       );
-    } else if (isInserting) {
-      context.missing(_warrantyDurationMonthsMeta);
     }
     if (data.containsKey('receipt_image_path')) {
       context.handle(
@@ -152,7 +150,7 @@ class $WarrantiesTable extends Warranties
       warrantyDurationMonths: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}warranty_duration_months'],
-      )!,
+      ),
       receiptImagePath: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}receipt_image_path'],
@@ -170,13 +168,13 @@ class WarrantyEntry extends DataClass implements Insertable<WarrantyEntry> {
   final String id;
   final String productName;
   final DateTime purchaseDate;
-  final int warrantyDurationMonths;
+  final int? warrantyDurationMonths;
   final String? receiptImagePath;
   const WarrantyEntry({
     required this.id,
     required this.productName,
     required this.purchaseDate,
-    required this.warrantyDurationMonths,
+    this.warrantyDurationMonths,
     this.receiptImagePath,
   });
   @override
@@ -185,7 +183,9 @@ class WarrantyEntry extends DataClass implements Insertable<WarrantyEntry> {
     map['id'] = Variable<String>(id);
     map['product_name'] = Variable<String>(productName);
     map['purchase_date'] = Variable<DateTime>(purchaseDate);
-    map['warranty_duration_months'] = Variable<int>(warrantyDurationMonths);
+    if (!nullToAbsent || warrantyDurationMonths != null) {
+      map['warranty_duration_months'] = Variable<int>(warrantyDurationMonths);
+    }
     if (!nullToAbsent || receiptImagePath != null) {
       map['receipt_image_path'] = Variable<String>(receiptImagePath);
     }
@@ -197,7 +197,9 @@ class WarrantyEntry extends DataClass implements Insertable<WarrantyEntry> {
       id: Value(id),
       productName: Value(productName),
       purchaseDate: Value(purchaseDate),
-      warrantyDurationMonths: Value(warrantyDurationMonths),
+      warrantyDurationMonths: warrantyDurationMonths == null && nullToAbsent
+          ? const Value.absent()
+          : Value(warrantyDurationMonths),
       receiptImagePath: receiptImagePath == null && nullToAbsent
           ? const Value.absent()
           : Value(receiptImagePath),
@@ -213,7 +215,7 @@ class WarrantyEntry extends DataClass implements Insertable<WarrantyEntry> {
       id: serializer.fromJson<String>(json['id']),
       productName: serializer.fromJson<String>(json['productName']),
       purchaseDate: serializer.fromJson<DateTime>(json['purchaseDate']),
-      warrantyDurationMonths: serializer.fromJson<int>(
+      warrantyDurationMonths: serializer.fromJson<int?>(
         json['warrantyDurationMonths'],
       ),
       receiptImagePath: serializer.fromJson<String?>(json['receiptImagePath']),
@@ -226,7 +228,7 @@ class WarrantyEntry extends DataClass implements Insertable<WarrantyEntry> {
       'id': serializer.toJson<String>(id),
       'productName': serializer.toJson<String>(productName),
       'purchaseDate': serializer.toJson<DateTime>(purchaseDate),
-      'warrantyDurationMonths': serializer.toJson<int>(warrantyDurationMonths),
+      'warrantyDurationMonths': serializer.toJson<int?>(warrantyDurationMonths),
       'receiptImagePath': serializer.toJson<String?>(receiptImagePath),
     };
   }
@@ -235,14 +237,15 @@ class WarrantyEntry extends DataClass implements Insertable<WarrantyEntry> {
     String? id,
     String? productName,
     DateTime? purchaseDate,
-    int? warrantyDurationMonths,
+    Value<int?> warrantyDurationMonths = const Value.absent(),
     Value<String?> receiptImagePath = const Value.absent(),
   }) => WarrantyEntry(
     id: id ?? this.id,
     productName: productName ?? this.productName,
     purchaseDate: purchaseDate ?? this.purchaseDate,
-    warrantyDurationMonths:
-        warrantyDurationMonths ?? this.warrantyDurationMonths,
+    warrantyDurationMonths: warrantyDurationMonths.present
+        ? warrantyDurationMonths.value
+        : this.warrantyDurationMonths,
     receiptImagePath: receiptImagePath.present
         ? receiptImagePath.value
         : this.receiptImagePath,
@@ -300,7 +303,7 @@ class WarrantiesCompanion extends UpdateCompanion<WarrantyEntry> {
   final Value<String> id;
   final Value<String> productName;
   final Value<DateTime> purchaseDate;
-  final Value<int> warrantyDurationMonths;
+  final Value<int?> warrantyDurationMonths;
   final Value<String?> receiptImagePath;
   final Value<int> rowid;
   const WarrantiesCompanion({
@@ -315,13 +318,12 @@ class WarrantiesCompanion extends UpdateCompanion<WarrantyEntry> {
     required String id,
     required String productName,
     required DateTime purchaseDate,
-    required int warrantyDurationMonths,
+    this.warrantyDurationMonths = const Value.absent(),
     this.receiptImagePath = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        productName = Value(productName),
-       purchaseDate = Value(purchaseDate),
-       warrantyDurationMonths = Value(warrantyDurationMonths);
+       purchaseDate = Value(purchaseDate);
   static Insertable<WarrantyEntry> custom({
     Expression<String>? id,
     Expression<String>? productName,
@@ -345,7 +347,7 @@ class WarrantiesCompanion extends UpdateCompanion<WarrantyEntry> {
     Value<String>? id,
     Value<String>? productName,
     Value<DateTime>? purchaseDate,
-    Value<int>? warrantyDurationMonths,
+    Value<int?>? warrantyDurationMonths,
     Value<String?>? receiptImagePath,
     Value<int>? rowid,
   }) {
@@ -417,7 +419,7 @@ typedef $$WarrantiesTableCreateCompanionBuilder =
       required String id,
       required String productName,
       required DateTime purchaseDate,
-      required int warrantyDurationMonths,
+      Value<int?> warrantyDurationMonths,
       Value<String?> receiptImagePath,
       Value<int> rowid,
     });
@@ -426,7 +428,7 @@ typedef $$WarrantiesTableUpdateCompanionBuilder =
       Value<String> id,
       Value<String> productName,
       Value<DateTime> purchaseDate,
-      Value<int> warrantyDurationMonths,
+      Value<int?> warrantyDurationMonths,
       Value<String?> receiptImagePath,
       Value<int> rowid,
     });
@@ -568,7 +570,7 @@ class $$WarrantiesTableTableManager
                 Value<String> id = const Value.absent(),
                 Value<String> productName = const Value.absent(),
                 Value<DateTime> purchaseDate = const Value.absent(),
-                Value<int> warrantyDurationMonths = const Value.absent(),
+                Value<int?> warrantyDurationMonths = const Value.absent(),
                 Value<String?> receiptImagePath = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => WarrantiesCompanion(
@@ -584,7 +586,7 @@ class $$WarrantiesTableTableManager
                 required String id,
                 required String productName,
                 required DateTime purchaseDate,
-                required int warrantyDurationMonths,
+                Value<int?> warrantyDurationMonths = const Value.absent(),
                 Value<String?> receiptImagePath = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => WarrantiesCompanion.insert(

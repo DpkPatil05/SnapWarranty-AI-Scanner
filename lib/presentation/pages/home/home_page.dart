@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mesh_gradient/mesh_gradient.dart';
 import '../../state/warranty_provider.dart';
 import '../../widgets/glass/glass_container.dart';
+import '../details/warranty_details_page.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 
@@ -13,7 +14,7 @@ class HomePage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final warrantiesAsync = ref.watch(warrantyListProvider);
 
-    // 2. Listen for errors to show SnackBar
+    // Listen for errors to show SnackBar
     ref.listen(warrantyListProvider, (previous, next) {
       next.whenOrNull(
         error: (error, stackTrace) {
@@ -57,17 +58,21 @@ class HomePage extends ConsumerWidget {
               slivers: [
                 _buildAppBar(),
                 warrantiesAsync.when(
-                  data: (warranties) => warranties.isEmpty
+                  data: (warranties) =>
+                  warranties.isEmpty
                       ? _buildEmptyState()
-                      : _buildWarrantyList(warranties),
-                  loading: () => const SliverFillRemaining(
+                      : _buildWarrantyList(context, ref, warranties),
+                  loading: () =>
+                  const SliverFillRemaining(
                     child: Center(
                       child: CircularProgressIndicator(color: Colors.white),
                     ),
                   ),
-                  error: (e, _) => warrantiesAsync.hasValue
-                      ? _buildWarrantyList(warrantiesAsync.value!)
-                      : _buildEmptyState(), // Errors are now in SnackBar
+                  error: (e, _) =>
+                  (warrantiesAsync.hasValue &&
+                      warrantiesAsync.value!.isNotEmpty)
+                      ? _buildWarrantyList(context, ref, warrantiesAsync.value!)
+                      : _buildEmptyState(),
                 ),
               ],
             ),
@@ -111,38 +116,45 @@ class HomePage extends ConsumerWidget {
     return SliverFillRemaining(
       hasScrollBody: false,
       child: Center(
-        child: GlassContainer(
-          padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                Icons.receipt_long,
-                size: 48,
-                color: Colors.white.withValues(alpha: 0.8),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            GlassContainer(
+              padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.receipt_long,
+                    size: 48,
+                    color: Colors.white.withValues(alpha: 0.8),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'No warranties yet',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Snap a receipt to get started',
+                    style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.6)),
+                  ),
+                ],
               ),
-              const SizedBox(height: 16),
-              const Text(
-                'No warranties yet',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Snap a receipt to get started',
-                style: TextStyle(color: Colors.white.withValues(alpha: 0.6)),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildWarrantyList(List<dynamic> warranties) {
+  Widget _buildWarrantyList(BuildContext context, WidgetRef ref,
+      List<dynamic> warranties) {
     return SliverPadding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       sliver: SliverList(
@@ -150,47 +162,114 @@ class HomePage extends ConsumerWidget {
           final item = warranties[index];
           return Padding(
             padding: const EdgeInsets.only(bottom: 16),
-            child: GlassContainer(
-              child: Row(
-                children: [
-                  Container(
-                    width: 60,
-                    height: 60,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(16),
+            child: Dismissible(
+              key: Key(item.id),
+              direction: DismissDirection.endToStart,
+              background: Container(
+                alignment: Alignment.centerRight,
+                padding: const EdgeInsets.only(right: 20.0),
+                decoration: BoxDecoration(
+                  color: Colors.redAccent.withValues(alpha: 0.3),
+                  borderRadius: BorderRadius.circular(24),
+                ),
+                child: const Icon(Icons.delete_sweep, color: Colors.white),
+              ),
+              onDismissed: (direction) {
+                ref.read(warrantyListProvider.notifier).deleteWarranty(item.id);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('${item.productName} deleted'),
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              },
+              child: InkWell(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => WarrantyDetailsPage(item: item),
                     ),
-                    child: const Icon(Icons.inventory_2, color: Colors.white),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          item.productName,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
+                  );
+                },
+                borderRadius: BorderRadius.circular(24),
+                child: GlassContainer(
+                  child: Row(
+                    children: [
+                      if (item.receiptImagePath != null)
+                        Hero(
+                          tag: 'receipt_${item.id}',
+                          child: Container(
+                            width: 60,
+                            height: 60,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(16),
+                              image: DecorationImage(
+                                image: FileImage(File(item.receiptImagePath!)),
+                                fit: BoxFit.cover,
+                              ),
+                            ),
                           ),
-                        ),
-                        Text(
-                          'Expires: ${item.expirationDate.toString().split(' ')[0]}',
-                          style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.6),
+                        )
+                      else
+                        Container(
+                          width: 60,
+                          height: 60,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(16),
                           ),
+                          child:
+                          const Icon(Icons.inventory_2, color: Colors.white),
                         ),
-                      ],
-                    ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              item.productName,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            if (item.expirationDate != null)
+                              Text(
+                                'Expires: ${item.expirationDate
+                                    .toString()
+                                    .split(' ')[0]}',
+                                style: TextStyle(
+                                  color: Colors.white.withValues(alpha: 0.6),
+                                ),
+                              )
+                            else
+                              Text(
+                                'Expiry not set',
+                                style: TextStyle(
+                                  color: Colors.orangeAccent.withValues(
+                                      alpha: 0.8),
+                                  fontSize: 12,
+                                  fontStyle: FontStyle.italic,
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                      Icon(
+                        item.expirationDate == null
+                            ? Icons.help_outline
+                            : (item.isExpired ? Icons.warning : Icons.verified),
+                        color: item.expirationDate == null
+                            ? Colors.white54
+                            : (item.isExpired
+                            ? Colors.orangeAccent
+                            : Colors.greenAccent),
+                      ),
+                    ],
                   ),
-                  Icon(
-                    item.isExpired ? Icons.warning : Icons.verified,
-                    color: item.isExpired
-                        ? Colors.orangeAccent
-                        : Colors.greenAccent,
-                  ),
-                ],
+                ),
               ),
             ),
           );
@@ -217,42 +296,44 @@ class HomePage extends ConsumerWidget {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (context) => GlassContainer(
-        borderRadius: 32,
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text(
-              'Select Image Source',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 24),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      builder: (context) =>
+          GlassContainer(
+            borderRadius: 32,
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                _buildSourceOption(
-                  context: context,
-                  icon: Icons.camera_alt,
-                  label: 'Camera',
-                  onTap: () => _pickImage(ref, ImageSource.camera, context),
+                const Text(
+                  'Select Image Source',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-                _buildSourceOption(
-                  context: context,
-                  icon: Icons.photo_library,
-                  label: 'Gallery',
-                  onTap: () => _pickImage(ref, ImageSource.gallery, context),
+                const SizedBox(height: 24),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    _buildSourceOption(
+                      context: context,
+                      icon: Icons.camera_alt,
+                      label: 'Camera',
+                      onTap: () => _pickImage(ref, ImageSource.camera, context),
+                    ),
+                    _buildSourceOption(
+                      context: context,
+                      icon: Icons.photo_library,
+                      label: 'Gallery',
+                      onTap: () =>
+                          _pickImage(ref, ImageSource.gallery, context),
+                    ),
+                  ],
                 ),
+                const SizedBox(height: 16),
               ],
             ),
-            const SizedBox(height: 16),
-          ],
-        ),
-      ),
+          ),
     );
   }
 
@@ -282,11 +363,9 @@ class HomePage extends ConsumerWidget {
     );
   }
 
-  Future<void> _pickImage(
-    WidgetRef ref,
-    ImageSource source,
-    BuildContext context,
-  ) async {
+  Future<void> _pickImage(WidgetRef ref,
+      ImageSource source,
+      BuildContext context,) async {
     Navigator.pop(context); // Close bottom sheet
     final picker = ImagePicker();
     final image = await picker.pickImage(source: source);

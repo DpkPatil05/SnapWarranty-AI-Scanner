@@ -13,4 +13,7 @@ abstract class WarrantyRepository {
 
   /// Deletes a warranty item
   Future<void> deleteWarranty(String id);
+
+  /// Updates an existing warranty item
+  Future<void> updateWarranty(WarrantyItem item);
 }
