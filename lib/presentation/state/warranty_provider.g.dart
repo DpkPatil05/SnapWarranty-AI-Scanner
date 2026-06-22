@@ -230,3 +230,96 @@ abstract class _$WarrantyList extends $AsyncNotifier<List<WarrantyItem>> {
     return element.handleCreate(ref, build);
   }
 }
+
+@ProviderFor(SearchQuery)
+final searchQueryProvider = SearchQueryProvider._();
+
+final class SearchQueryProvider extends $NotifierProvider<SearchQuery, String> {
+  SearchQueryProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'searchQueryProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$searchQueryHash();
+
+  @$internal
+  @override
+  SearchQuery create() => SearchQuery();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(String value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<String>(value),
+    );
+  }
+}
+
+String _$searchQueryHash() => r'286abcff51dc844febe02639bb2e883ccab22cfd';
+
+abstract class _$SearchQuery extends $Notifier<String> {
+  String build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<String, String>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<String, String>,
+              String,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}
+
+@ProviderFor(filteredWarranties)
+final filteredWarrantiesProvider = FilteredWarrantiesProvider._();
+
+final class FilteredWarrantiesProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<List<WarrantyItem>>,
+          List<WarrantyItem>,
+          FutureOr<List<WarrantyItem>>
+        >
+    with
+        $FutureModifier<List<WarrantyItem>>,
+        $FutureProvider<List<WarrantyItem>> {
+  FilteredWarrantiesProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'filteredWarrantiesProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$filteredWarrantiesHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<List<WarrantyItem>> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<List<WarrantyItem>> create(Ref ref) {
+    return filteredWarranties(ref);
+  }
+}
+
+String _$filteredWarrantiesHash() =>
+    r'935847d7f5d763900fe7842500ca1036e14fbd9a';

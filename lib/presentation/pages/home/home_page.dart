@@ -12,7 +12,7 @@ class HomePage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final warrantiesAsync = ref.watch(warrantyListProvider);
+    final warrantiesAsync = ref.watch(filteredWarrantiesProvider);
 
     // Listen for errors to show SnackBar
     ref.listen(warrantyListProvider, (previous, next) {
@@ -56,23 +56,21 @@ class HomePage extends ConsumerWidget {
           SafeArea(
             child: CustomScrollView(
               slivers: [
-                _buildAppBar(),
+                _buildAppBar(context, ref),
                 warrantiesAsync.when(
-                  data: (warranties) =>
-                  warranties.isEmpty
-                      ? _buildEmptyState()
+                  data: (warranties) => warranties.isEmpty
+                      ? _buildEmptyState(ref)
                       : _buildWarrantyList(context, ref, warranties),
-                  loading: () =>
-                  const SliverFillRemaining(
+                  loading: () => const SliverFillRemaining(
                     child: Center(
                       child: CircularProgressIndicator(color: Colors.white),
                     ),
                   ),
-                  error: (e, _) =>
-                  (warrantiesAsync.hasValue &&
-                      warrantiesAsync.value!.isNotEmpty)
-                      ? _buildWarrantyList(context, ref, warrantiesAsync.value!)
-                      : _buildEmptyState(),
+                  error: (e, _) => (warrantiesAsync.hasValue &&
+                          warrantiesAsync.value!.isNotEmpty)
+                      ? _buildWarrantyList(
+                          context, ref, warrantiesAsync.value!)
+                      : _buildEmptyState(ref),
                 ),
               ],
             ),
@@ -83,7 +81,7 @@ class HomePage extends ConsumerWidget {
     );
   }
 
-  Widget _buildAppBar() {
+  Widget _buildAppBar(BuildContext context, WidgetRef ref) {
     return SliverPadding(
       padding: const EdgeInsets.all(24.0),
       sliver: SliverToBoxAdapter(
@@ -106,13 +104,36 @@ class HomePage extends ConsumerWidget {
                 color: Colors.white.withValues(alpha: 0.7),
               ),
             ),
+            const SizedBox(height: 24),
+            _buildSearchBar(ref),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildSearchBar(WidgetRef ref) {
+    return GlassContainer(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      borderRadius: 16,
+      child: TextField(
+        onChanged: (value) =>
+            ref.read(searchQueryProvider.notifier).update(value),
+        style: const TextStyle(color: Colors.white),
+        decoration: InputDecoration(
+          hintText: 'Search receipts...',
+          hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.5)),
+          border: InputBorder.none,
+          icon: const Icon(Icons.search, color: Colors.white70),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyState(WidgetRef ref) {
+    final query = ref.watch(searchQueryProvider);
+    final isSearching = query.isNotEmpty;
+
     return SliverFillRemaining(
       hasScrollBody: false,
       child: Center(
@@ -125,14 +146,14 @@ class HomePage extends ConsumerWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(
-                    Icons.receipt_long,
+                    isSearching ? Icons.search_off : Icons.receipt_long,
                     size: 48,
                     color: Colors.white.withValues(alpha: 0.8),
                   ),
                   const SizedBox(height: 16),
-                  const Text(
-                    'No warranties yet',
-                    style: TextStyle(
+                  Text(
+                    isSearching ? 'No results found' : 'No warranties yet',
+                    style: const TextStyle(
                       color: Colors.white,
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -140,9 +161,10 @@ class HomePage extends ConsumerWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Snap a receipt to get started',
-                    style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.6)),
+                    isSearching
+                        ? 'Try a different search term'
+                        : 'Snap a receipt to get started',
+                    style: TextStyle(color: Colors.white.withValues(alpha: 0.6)),
                   ),
                 ],
               ),
@@ -153,8 +175,8 @@ class HomePage extends ConsumerWidget {
     );
   }
 
-  Widget _buildWarrantyList(BuildContext context, WidgetRef ref,
-      List<dynamic> warranties) {
+  Widget _buildWarrantyList(
+      BuildContext context, WidgetRef ref, List<dynamic> warranties) {
     return SliverPadding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       sliver: SliverList(
@@ -220,7 +242,7 @@ class HomePage extends ConsumerWidget {
                             borderRadius: BorderRadius.circular(16),
                           ),
                           child:
-                          const Icon(Icons.inventory_2, color: Colors.white),
+                              const Icon(Icons.inventory_2, color: Colors.white),
                         ),
                       const SizedBox(width: 16),
                       Expanded(
@@ -237,9 +259,7 @@ class HomePage extends ConsumerWidget {
                             ),
                             if (item.expirationDate != null)
                               Text(
-                                'Expires: ${item.expirationDate
-                                    .toString()
-                                    .split(' ')[0]}',
+                                'Expires: ${item.expirationDate.toString().split(' ')[0]}',
                                 style: TextStyle(
                                   color: Colors.white.withValues(alpha: 0.6),
                                 ),
@@ -264,8 +284,8 @@ class HomePage extends ConsumerWidget {
                         color: item.expirationDate == null
                             ? Colors.white54
                             : (item.isExpired
-                            ? Colors.orangeAccent
-                            : Colors.greenAccent),
+                                ? Colors.orangeAccent
+                                : Colors.greenAccent),
                       ),
                     ],
                   ),
@@ -296,44 +316,42 @@ class HomePage extends ConsumerWidget {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (context) =>
-          GlassContainer(
-            borderRadius: 32,
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
+      builder: (context) => GlassContainer(
+        borderRadius: 32,
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'Select Image Source',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 24),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                const Text(
-                  'Select Image Source',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
+                _buildSourceOption(
+                  context: context,
+                  icon: Icons.camera_alt,
+                  label: 'Camera',
+                  onTap: () => _pickImage(ref, ImageSource.camera, context),
                 ),
-                const SizedBox(height: 24),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    _buildSourceOption(
-                      context: context,
-                      icon: Icons.camera_alt,
-                      label: 'Camera',
-                      onTap: () => _pickImage(ref, ImageSource.camera, context),
-                    ),
-                    _buildSourceOption(
-                      context: context,
-                      icon: Icons.photo_library,
-                      label: 'Gallery',
-                      onTap: () =>
-                          _pickImage(ref, ImageSource.gallery, context),
-                    ),
-                  ],
+                _buildSourceOption(
+                  context: context,
+                  icon: Icons.photo_library,
+                  label: 'Gallery',
+                  onTap: () => _pickImage(ref, ImageSource.gallery, context),
                 ),
-                const SizedBox(height: 16),
               ],
             ),
-          ),
+            const SizedBox(height: 16),
+          ],
+        ),
+      ),
     );
   }
 
@@ -363,9 +381,11 @@ class HomePage extends ConsumerWidget {
     );
   }
 
-  Future<void> _pickImage(WidgetRef ref,
-      ImageSource source,
-      BuildContext context,) async {
+  Future<void> _pickImage(
+    WidgetRef ref,
+    ImageSource source,
+    BuildContext context,
+  ) async {
     Navigator.pop(context); // Close bottom sheet
     final picker = ImagePicker();
     final image = await picker.pickImage(source: source);
