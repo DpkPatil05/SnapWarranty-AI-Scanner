@@ -60,16 +60,24 @@ class WarrantyList extends _$WarrantyList {
       final repository = ref.read(warrantyRepositoryProvider);
       dev.log('Extracting warranty from image...', name: 'WarrantyList');
       final newItem = await repository.extractWarrantyFromImage(image);
-      dev.log('Extraction success: ${newItem.productName}', name: 'WarrantyList');
-      
+      dev.log(
+        'Extraction success: ${newItem.productName}',
+        name: 'WarrantyList',
+      );
+
       dev.log('Saving warranty to local DB...', name: 'WarrantyList');
       await repository.saveWarranty(newItem);
       dev.log('Save success', name: 'WarrantyList');
-      
+
       // Refresh state
       ref.invalidateSelf();
     } catch (e, st) {
-      dev.log('Error in scanAndAddWarranty', name: 'WarrantyList', error: e, stackTrace: st);
+      dev.log(
+        'Error in scanAndAddWarranty',
+        name: 'WarrantyList',
+        error: e,
+        stackTrace: st,
+      );
       state = AsyncValue.error(e, st);
     }
   }
@@ -82,7 +90,12 @@ class WarrantyList extends _$WarrantyList {
       dev.log('Delete success', name: 'WarrantyList');
       ref.invalidateSelf();
     } catch (e, st) {
-      dev.log('Error in deleteWarranty', name: 'WarrantyList', error: e, stackTrace: st);
+      dev.log(
+        'Error in deleteWarranty',
+        name: 'WarrantyList',
+        error: e,
+        stackTrace: st,
+      );
       state = AsyncValue.error(e, st);
     }
   }
@@ -95,8 +108,40 @@ class WarrantyList extends _$WarrantyList {
       dev.log('Update success', name: 'WarrantyList');
       ref.invalidateSelf();
     } catch (e, st) {
-      dev.log('Error in updateWarranty', name: 'WarrantyList', error: e, stackTrace: st);
+      dev.log(
+        'Error in updateWarranty',
+        name: 'WarrantyList',
+        error: e,
+        stackTrace: st,
+      );
       state = AsyncValue.error(e, st);
     }
   }
+}
+
+// --- 5. Search Provider ---
+@riverpod
+class SearchQuery extends _$SearchQuery {
+  @override
+  String build() => '';
+
+  void update(String query) => state = query;
+}
+
+// --- 6. Filtered Warranty Provider ---
+@riverpod
+FutureOr<List<WarrantyItem>> filteredWarranties(Ref ref) async {
+  final warrantiesAsync = ref.watch(warrantyListProvider);
+  final query = ref.watch(searchQueryProvider).toLowerCase();
+
+  return warrantiesAsync.when(
+    data: (list) {
+      if (query.isEmpty) return list;
+      return list
+          .where((item) => item.productName.toLowerCase().contains(query))
+          .toList();
+    },
+    loading: () => [],
+    error: (e, st) => [],
+  );
 }
