@@ -138,6 +138,102 @@ final class WarrantyDaoProvider
 
 String _$warrantyDaoHash() => r'a3387d89a854962940f7bf44e330a071ac083112';
 
+@ProviderFor(driveSyncDataSource)
+final driveSyncDataSourceProvider = DriveSyncDataSourceProvider._();
+
+final class DriveSyncDataSourceProvider
+    extends
+        $FunctionalProvider<
+          DriveSyncDataSource,
+          DriveSyncDataSource,
+          DriveSyncDataSource
+        >
+    with $Provider<DriveSyncDataSource> {
+  DriveSyncDataSourceProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'driveSyncDataSourceProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$driveSyncDataSourceHash();
+
+  @$internal
+  @override
+  $ProviderElement<DriveSyncDataSource> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  DriveSyncDataSource create(Ref ref) {
+    return driveSyncDataSource(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(DriveSyncDataSource value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<DriveSyncDataSource>(value),
+    );
+  }
+}
+
+String _$driveSyncDataSourceHash() =>
+    r'02d7e3f63cff55c897fb4c41209df0c20f058433';
+
+@ProviderFor(notificationService)
+final notificationServiceProvider = NotificationServiceProvider._();
+
+final class NotificationServiceProvider
+    extends
+        $FunctionalProvider<
+          NotificationService,
+          NotificationService,
+          NotificationService
+        >
+    with $Provider<NotificationService> {
+  NotificationServiceProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'notificationServiceProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$notificationServiceHash();
+
+  @$internal
+  @override
+  $ProviderElement<NotificationService> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  NotificationService create(Ref ref) {
+    return notificationService(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(NotificationService value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<NotificationService>(value),
+    );
+  }
+}
+
+String _$notificationServiceHash() =>
+    r'cda5ea9d196dce85bee56839a4a0f035021752e3';
+
 @ProviderFor(warrantyRepository)
 final warrantyRepositoryProvider = WarrantyRepositoryProvider._();
 
@@ -184,7 +280,7 @@ final class WarrantyRepositoryProvider
 }
 
 String _$warrantyRepositoryHash() =>
-    r'45d18b8efc0f8d3caea4aa86a5c4ee27f1b70e2e';
+    r'eeaf9e64bbb269a4b07bd187c0f8b2939edeb45a';
 
 @ProviderFor(WarrantyList)
 final warrantyListProvider = WarrantyListProvider._();
@@ -210,7 +306,7 @@ final class WarrantyListProvider
   WarrantyList create() => WarrantyList();
 }
 
-String _$warrantyListHash() => r'6dd42ebd0bc1a6fc06c7802899ee74f885c09eb7';
+String _$warrantyListHash() => r'9e2006de0b4d9104ad06e9156918d1e77673cd13';
 
 abstract class _$WarrantyList extends $AsyncNotifier<List<WarrantyItem>> {
   FutureOr<List<WarrantyItem>> build();
