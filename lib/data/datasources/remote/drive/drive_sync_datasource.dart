@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:googleapis/drive/v3.dart' as drive;
 import 'package:extension_google_sign_in_as_googleapis_auth/extension_google_sign_in_as_googleapis_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import '../../local/database/app_database.dart';
 import 'dart:developer' as dev;
 
 class DriveSyncDataSource {
@@ -11,189 +10,314 @@ class DriveSyncDataSource {
   static const String _metadataFileName = 'sync_metadata.json';
   static const List<String> _driveScopes = [drive.DriveApi.driveFileScope];
 
+  // ─── Singleton ────────────────────────────────────────────────────────────
+  // A single shared instance means _currentUser survives across all callers
+  // within the same app session, even if the provider is read multiple times.
+  static final DriveSyncDataSource _instance = DriveSyncDataSource._internal();
+
+  static DriveSyncDataSource get instance => _instance;
+
+  factory DriveSyncDataSource() => _instance;
+
+  DriveSyncDataSource._internal();
+
+  // ──────────────────────────────────────────────────────────────────────────
+
   final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
+
   bool _initialized = false;
+  GoogleSignInAccount? _currentUser;
+
+  /// True when we already have a valid signed-in account in memory.
+  bool get isSignedIn => _currentUser != null;
 
   Future<void> _ensureInitialized() async {
-    if (!_initialized) {
-      await _googleSignIn.initialize();
-      _initialized = true;
+    if (_initialized) return;
+    await _googleSignIn.initialize();
+    _initialized = true;
+
+    // Keep _currentUser in sync with platform-level auth events.
+    _googleSignIn.authenticationEvents.listen((event) {
+      if (event is GoogleSignInAuthenticationEventSignIn) {
+        _currentUser = event.user;
+        dev.log('Session updated: ${_currentUser?.email}', name: 'DriveSync');
+      } else if (event is GoogleSignInAuthenticationEventSignOut) {
+        _currentUser = null;
+        dev.log('Session cleared (SignOut)', name: 'DriveSync');
+      }
+    });
+  }
+
+  /// Call this once at app startup (e.g. in main.dart or a top-level provider).
+  /// It silently restores a previous session so the first backup/restore
+  /// attempt never needs to show the sign-in UI.
+  Future<void> restoreSession() async {
+    try {
+      await _ensureInitialized();
+      if (_currentUser != null) return; // already have a session
+
+      final account = await _googleSignIn.attemptLightweightAuthentication();
+      if (account != null) {
+        _currentUser = account;
+        dev.log('Session pre-warmed for: ${account.email}', name: 'DriveSync');
+      }
+    } catch (e) {
+      // Non-fatal — the user will be prompted interactively on first use.
+      dev.log(
+        'restoreSession failed (will sign in on demand): $e',
+        name: 'DriveSync',
+      );
     }
   }
 
-  /// Attempts to sign in silently if a previous session exists.
-  /// This prevents the login popup from appearing every time the app opens.
+  /// Silent-only sign-in. Returns null if the user has never signed in before.
   Future<GoogleSignInAccount?> silentSignIn() async {
     try {
       await _ensureInitialized();
-      // attemptLightweightAuthentication is the modern silent sign-in for 7.x
+      if (_currentUser != null) return _currentUser;
+
       final account = await _googleSignIn.attemptLightweightAuthentication();
-      if (account != null) {
-        dev.log('Silent Sign-In Success: \${account.email}', name: 'DriveSync');
-      }
+      if (account != null) _currentUser = account;
       return account;
     } catch (e) {
-      dev.log('Silent Sign-In Error: \$e', name: 'DriveSync');
+      dev.log('Silent sign-in failed: $e', name: 'DriveSync');
       return null;
     }
   }
 
+  /// Interactive sign-in — shows the Google account picker.
   Future<GoogleSignInAccount?> signIn() async {
     try {
       await _ensureInitialized();
-      return await _googleSignIn.authenticate(scopeHint: _driveScopes);
+      final account = await _googleSignIn.authenticate();
+      _currentUser = account;
+      return account;
     } catch (e) {
-      dev.log('Drive SignIn Error: \$e', name: 'DriveSync');
+      dev.log('Interactive sign-in error: $e', name: 'DriveSync');
       rethrow;
     }
   }
 
   Future<void> signOut() async {
     await _googleSignIn.signOut();
+    _currentUser = null;
   }
 
+  /// Returns a ready-to-use DriveApi, handling all auth tiers automatically:
+  ///   1. Existing in-memory session  → instant, no UI
+  ///   2. Platform stored credentials → silent, no UI (fixes the reopen bug)
+  ///   3. Interactive sign-in         → shows Google UI once, then never again
   Future<drive.DriveApi?> _getDriveApi() async {
     await _ensureInitialized();
 
-    // 1. Try silent/existing session first, then interactive
-    final account =
-        await _googleSignIn.attemptLightweightAuthentication() ??
-        await _googleSignIn.authenticate(scopeHint: _driveScopes);
+    // Tier 1: already signed in this session.
+    GoogleSignInAccount? account = _currentUser;
 
-    // 2. Ensure Drive scopes are authorized
-    final authorization = await account.authorizationClient.authorizeScopes(
-      _driveScopes,
-    );
+    // Tier 2: silently restore from platform credential store.
+    //         This is what makes "reopen app" seamless.
+    if (account == null) {
+      account = await _googleSignIn.attemptLightweightAuthentication();
+      if (account != null) {
+        _currentUser = account; // ← was missing before; caused repeated prompts
+        dev.log(
+          'Silently restored session: ${account.email}',
+          name: 'DriveSync',
+        );
+      }
+    }
 
-    // 3. Create the authenticated client using the official 2026 extension
-    final client = authorization.authClient(scopes: _driveScopes);
+    // Tier 3: interactive — only reached if the user has truly never signed in.
+    if (account == null) {
+      try {
+        account = await _googleSignIn.authenticate();
+        _currentUser = account;
+        dev.log(
+          'Interactive sign-in succeeded: ${account.email}',
+          name: 'DriveSync',
+        );
+      } catch (e) {
+        dev.log('All auth tiers failed: $e', name: 'DriveSync');
+        return null;
+      }
+    }
 
-    return drive.DriveApi(client);
+    try {
+      final authorization = await account.authorizationClient.authorizeScopes(
+        _driveScopes,
+      );
+      final client = authorization.authClient(scopes: _driveScopes);
+      return drive.DriveApi(client);
+    } catch (e) {
+      // Token likely expired; clear so the next call tries to lightweight auth.
+      dev.log(
+        'Scope authorization failed (token expired?): $e',
+        name: 'DriveSync',
+      );
+      _currentUser = null;
+      return null;
+    }
   }
+
+  String _escape(String value) => value.replaceAll("'", "\\'");
 
   Future<String?> _getOrCreateFolder(drive.DriveApi api) async {
-    final list = await api.files.list(
-      q: "name = '\$_folderName' and mimeType = 'application/vnd.google-apps.folder' and trashed = false",
-      spaces: 'drive',
-    );
+    try {
+      final list = await api.files.list(
+        q:
+            "name = '${_escape(_folderName)}' and "
+            "mimeType = 'application/vnd.google-apps.folder' and "
+            "trashed = false",
+      );
 
-    if (list.files != null && list.files!.isNotEmpty) {
-      return list.files!.first.id;
+      if (list.files != null && list.files!.isNotEmpty) {
+        final id = list.files!.first.id;
+        if (id != null) return id;
+      }
+
+      final folder = drive.File()
+        ..name = _folderName
+        ..mimeType = 'application/vnd.google-apps.folder';
+
+      final created = await api.files.create(folder);
+      return created.id;
+    } catch (e) {
+      dev.log('Error in _getOrCreateFolder: $e', name: 'DriveSync');
+      rethrow;
     }
-
-    final folder = drive.File()
-      ..name = _folderName
-      ..mimeType = 'application/vnd.google-apps.folder';
-
-    final createdFolder = await api.files.create(folder);
-    return createdFolder.id;
   }
 
-  Future<void> syncWarranties(List<WarrantyEntry> items) async {
-    final api = await _getDriveApi();
-    if (api == null) throw Exception('Drive API not initialized');
+  Future<void> syncWarranties(List<dynamic> items) async {
+    try {
+      final api = await _getDriveApi();
+      if (api == null) throw Exception('Please sign in to Google Drive');
 
-    final folderId = await _getOrCreateFolder(api);
-    if (folderId == null) throw Exception('Could not access backup folder');
+      final folderId = await _getOrCreateFolder(api);
+      if (folderId == null) throw Exception('Drive folder access failed');
 
-    // 1. Upload Metadata
-    final metadata = items.map((i) => i.toJson()).toList();
-    final metadataJson = jsonEncode(metadata);
-
-    final existingFiles = await api.files.list(
-      q: "name = '\$_metadataFileName' and '\$folderId' in parents and trashed = false",
-    );
-
-    final media = drive.Media(
-      Stream.value(utf8.encode(metadataJson)),
-      metadataJson.length,
-    );
-
-    if (existingFiles.files != null && existingFiles.files!.isNotEmpty) {
-      await api.files.update(
-        drive.File(),
-        existingFiles.files!.first.id!,
-        uploadMedia: media,
+      final metadata = items.map((i) => i.toJson()).toList();
+      final metadataJson = jsonEncode(metadata);
+      final media = drive.Media(
+        Stream.value(utf8.encode(metadataJson)),
+        metadataJson.length,
       );
-    } else {
-      final metadataFile = drive.File()
-        ..name = _metadataFileName
-        ..parents = [folderId];
-      await api.files.create(metadataFile, uploadMedia: media);
-    }
 
-    // 2. Upload Documents (Images/PDFs)
-    for (final item in items) {
-      if (item.receiptImagePath != null) {
-        final file = File(item.receiptImagePath!);
-        if (await file.exists()) {
-          final fileName = item.receiptImagePath!.split('/').last;
+      drive.FileList? existing;
+      try {
+        existing = await api.files.list(
+          q:
+              "name = '${_escape(_metadataFileName)}' and "
+              "'$folderId' in parents and trashed = false",
+        );
+      } catch (e) {
+        dev.log('Failed to query existing metadata: $e', name: 'DriveSync');
+      }
 
-          final check = await api.files.list(
-            q: "name = '\$fileName' and '\$folderId' in parents and trashed = false",
-          );
+      if (existing != null &&
+          existing.files != null &&
+          existing.files!.isNotEmpty) {
+        final fileId = existing.files!.first.id!;
+        await api.files.update(drive.File(), fileId, uploadMedia: media);
+      } else {
+        final metadataFile = drive.File()
+          ..name = _metadataFileName
+          ..parents = [folderId];
+        await api.files.create(metadataFile, uploadMedia: media);
+      }
 
-          if (check.files == null || check.files!.isEmpty) {
-            final driveFile = drive.File()
-              ..name = fileName
-              ..parents = [folderId];
-            await api.files.create(
-              driveFile,
-              uploadMedia: drive.Media(file.openRead(), await file.length()),
-            );
+      for (final item in items) {
+        if (item.receiptImagePath != null) {
+          final file = File(item.receiptImagePath!);
+          if (await file.exists()) {
+            final fileName = item.receiptImagePath!.split('/').last;
+
+            drive.FileList? check;
+            try {
+              check = await api.files.list(
+                q:
+                    "name = '${_escape(fileName)}' and "
+                    "'$folderId' in parents and trashed = false",
+              );
+            } catch (_) {}
+
+            if (check == null || check.files == null || check.files!.isEmpty) {
+              final driveFile = drive.File()
+                ..name = fileName
+                ..parents = [folderId];
+              await api.files.create(
+                driveFile,
+                uploadMedia: drive.Media(file.openRead(), await file.length()),
+              );
+            }
           }
         }
       }
+    } catch (e) {
+      dev.log('Sync Error: $e', name: 'DriveSync');
+      rethrow;
     }
   }
 
   Future<List<Map<String, dynamic>>> downloadMetadata() async {
     final api = await _getDriveApi();
-    if (api == null) return [];
+    if (api == null) throw Exception('Please sign in to Google Drive');
+
+    final folderId = await _getOrCreateFolder(api);
+    if (folderId == null) return [];
 
     final list = await api.files.list(
-      q: "name = '\$_metadataFileName' and trashed = false",
+      q:
+          "name = '${_escape(_metadataFileName)}' and "
+          "'$folderId' in parents and trashed = false",
     );
 
-    if (list.files == null || list.files!.isEmpty) return [];
+    if (list.files == null ||
+        list.files!.isEmpty ||
+        list.files!.first.id == null) {
+      return [];
+    }
 
-    final response =
+    final media =
         await api.files.get(
               list.files!.first.id!,
               downloadOptions: drive.DownloadOptions.fullMedia,
             )
             as drive.Media;
 
-    final bytes = await response.stream.fold<List<int>>(
+    final bytes = await media.stream.fold<List<int>>(
       [],
       (p, e) => p..addAll(e),
     );
-    final decoded = jsonDecode(utf8.decode(bytes)) as List;
-    return decoded.map((e) => Map<String, dynamic>.from(e)).toList();
+    return (jsonDecode(utf8.decode(bytes)) as List)
+        .map((e) => Map<String, dynamic>.from(e))
+        .toList();
   }
 
   Future<File?> downloadImage(String fileName, String localDir) async {
     final api = await _getDriveApi();
     if (api == null) return null;
 
+    final folderId = await _getOrCreateFolder(api);
+    if (folderId == null) return null;
+
     final list = await api.files.list(
-      q: "name = '\$fileName' and trashed = false",
+      q:
+          "name = '${_escape(fileName)}' and "
+          "'$folderId' in parents and trashed = false",
     );
 
-    if (list.files == null || list.files!.isEmpty) return null;
-
-    final response =
-        await api.files.get(
-              list.files!.first.id!,
-              downloadOptions: drive.DownloadOptions.fullMedia,
-            )
-            as drive.Media;
-
-    final localFile = File('\$localDir/\$fileName');
-    final sink = localFile.openWrite();
-    await response.stream.pipe(sink);
-    await sink.close();
-
-    return localFile;
+    if (list.files != null &&
+        list.files!.isNotEmpty &&
+        list.files!.first.id != null) {
+      final media =
+          await api.files.get(
+                list.files!.first.id!,
+                downloadOptions: drive.DownloadOptions.fullMedia,
+              )
+              as drive.Media;
+      final localFile = File('$localDir/$fileName');
+      await media.stream.pipe(localFile.openWrite());
+      return localFile;
+    }
+    return null;
   }
 }

@@ -184,7 +184,7 @@ final class DriveSyncDataSourceProvider
 }
 
 String _$driveSyncDataSourceHash() =>
-    r'02d7e3f63cff55c897fb4c41209df0c20f058433';
+    r'f687d0c884492f3ce87dea8e29f611383e412f56';
 
 @ProviderFor(notificationService)
 final notificationServiceProvider = NotificationServiceProvider._();
@@ -419,3 +419,55 @@ final class FilteredWarrantiesProvider
 
 String _$filteredWarrantiesHash() =>
     r'935847d7f5d763900fe7842500ca1036e14fbd9a';
+
+@ProviderFor(DocumentScanning)
+final documentScanningProvider = DocumentScanningProvider._();
+
+final class DocumentScanningProvider
+    extends $NotifierProvider<DocumentScanning, bool> {
+  DocumentScanningProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'documentScanningProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$documentScanningHash();
+
+  @$internal
+  @override
+  DocumentScanning create() => DocumentScanning();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(bool value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<bool>(value),
+    );
+  }
+}
+
+String _$documentScanningHash() => r'5d68eae5e16946157002092293d52d5af2226a6b';
+
+abstract class _$DocumentScanning extends $Notifier<bool> {
+  bool build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<bool, bool>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<bool, bool>,
+              bool,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}

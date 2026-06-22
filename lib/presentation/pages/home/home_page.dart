@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
+
 import '../../state/warranty_provider.dart';
 import '../../widgets/glass/glass_container.dart';
 import '../../widgets/glass/glass_snackbar.dart';
 import '../../widgets/glass/liquid_glass_background.dart';
 import '../details/warranty_details_page.dart';
 import '../settings/settings_page.dart';
-import 'package:image_picker/image_picker.dart';
-import 'dart:io';
 
 class HomePage extends ConsumerWidget {
   const HomePage({super.key});
@@ -16,14 +17,14 @@ class HomePage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final warrantiesAsync = ref.watch(filteredWarrantiesProvider);
-    final rawWarrantiesAsync = ref.watch(warrantyListProvider);
+    final isScanning = ref.watch(documentScanningProvider);
 
     // Request Notification Permissions on startup
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(notificationServiceProvider).requestPermissions();
+      // Assuming your notification service initialization lives here
     });
 
-    // Listen for errors to show SnackBar
+    // Listen for scanning errors to show SnackBar
     ref.listen(warrantyListProvider, (previous, next) {
       next.whenOrNull(
         error: (error, stackTrace) {
@@ -42,7 +43,7 @@ class HomePage extends ConsumerWidget {
         children: [
           const LiquidGlassBackground(),
 
-          // 2. Content
+          // Content Layer
           SafeArea(
             child: CustomScrollView(
               slivers: [
@@ -59,21 +60,21 @@ class HomePage extends ConsumerWidget {
                       child: CircularProgressIndicator(color: Colors.white),
                     ),
                   ),
-                  error: (e, _) => (warrantiesAsync.hasValue &&
+                  error: (e, _) =>
+                      (warrantiesAsync.hasValue &&
                           warrantiesAsync.value!.isNotEmpty)
-                      ? _buildWarrantyList(
-                          context, ref, warrantiesAsync.value!)
+                      ? _buildWarrantyList(context, ref, warrantiesAsync.value!)
                       : _buildEmptyState(ref),
                 ),
               ],
             ),
           ),
 
-          // 3. Global Scan Loader
-          if (rawWarrantiesAsync.isLoading && !rawWarrantiesAsync.hasValue)
+          // Decoupled Global Scan Loader Overlay
+          if (isScanning)
             Positioned.fill(
               child: Container(
-                color: Colors.black.withValues(alpha: 0.4),
+                color: Colors.black.withValues(alpha: 0.5),
                 child: Center(
                   child: GlassContainer(
                     blur: 20,
@@ -82,19 +83,21 @@ class HomePage extends ConsumerWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         const CircularProgressIndicator(color: Colors.white),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 24),
                         const Text(
-                          'Analyzing Document...',
+                          'Analyzing Document',
                           style: TextStyle(
                             color: Colors.white,
+                            fontSize: 18,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
+                        const SizedBox(height: 8),
                         Text(
-                          'Gemini is reading your data',
+                          'AI is reading your data...',
                           style: TextStyle(
                             color: Colors.white.withValues(alpha: 0.7),
-                            fontSize: 12,
+                            fontSize: 14,
                           ),
                         ),
                       ],
@@ -239,7 +242,8 @@ class HomePage extends ConsumerWidget {
       sliver: SliverList(
         delegate: SliverChildBuilderDelegate((context, index) {
           final item = warranties[index];
-          final isPdf = item.receiptImagePath?.toLowerCase().endsWith('.pdf') ?? false;
+          final isPdf =
+              item.receiptImagePath?.toLowerCase().endsWith('.pdf') ?? false;
 
           return Padding(
             padding: const EdgeInsets.only(bottom: 16),
@@ -285,12 +289,21 @@ class HomePage extends ConsumerWidget {
                             decoration: BoxDecoration(
                               color: Colors.white.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(16),
-                              image: isPdf ? null : DecorationImage(
-                                image: FileImage(File(item.receiptImagePath!)),
-                                fit: BoxFit.cover,
-                              ),
+                              image: isPdf
+                                  ? null
+                                  : DecorationImage(
+                                      image: FileImage(
+                                        File(item.receiptImagePath!),
+                                      ),
+                                      fit: BoxFit.cover,
+                                    ),
                             ),
-                            child: isPdf ? const Icon(Icons.picture_as_pdf, color: Colors.redAccent) : null,
+                            child: isPdf
+                                ? const Icon(
+                                    Icons.picture_as_pdf,
+                                    color: Colors.redAccent,
+                                  )
+                                : null,
                           ),
                         )
                       else
@@ -455,27 +468,39 @@ class HomePage extends ConsumerWidget {
     ImageSource source,
     BuildContext context,
   ) async {
-    Navigator.pop(context); // Close bottom sheet
+    Navigator.pop(context);
     final picker = ImagePicker();
     final image = await picker.pickImage(source: source);
     if (image != null) {
-      ref
-          .read(warrantyListProvider.notifier)
-          .scanAndAddWarranty(File(image.path));
+      try {
+        ref.read(documentScanningProvider.notifier).setScanning(true);
+        await ref
+            .read(warrantyListProvider.notifier)
+            .scanAndAddWarranty(File(image.path));
+      } finally {
+        ref.read(documentScanningProvider.notifier).setScanning(false);
+      }
     }
   }
 
   Future<void> _pickPdf(WidgetRef ref, BuildContext context) async {
     Navigator.pop(context);
+
+    // Reverted back to the standard pickFiles() method
     final result = await FilePicker.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['pdf'],
     );
 
     if (result != null && result.files.single.path != null) {
-      ref
-          .read(warrantyListProvider.notifier)
-          .scanAndAddWarranty(File(result.files.single.path!));
+      try {
+        ref.read(documentScanningProvider.notifier).setScanning(true);
+        await ref
+            .read(warrantyListProvider.notifier)
+            .scanAndAddWarranty(File(result.files.single.path!));
+      } finally {
+        ref.read(documentScanningProvider.notifier).setScanning(false);
+      }
     }
   }
 }

@@ -39,7 +39,8 @@ WarrantyDao warrantyDao(Ref ref) {
 
 @Riverpod(keepAlive: true)
 DriveSyncDataSource driveSyncDataSource(Ref ref) {
-  return DriveSyncDataSource();
+  // Enforce the singleton instance to preserve the authenticated session state
+  return DriveSyncDataSource.instance;
 }
 
 @riverpod
@@ -64,24 +65,13 @@ class WarrantyList extends _$WarrantyList {
   FutureOr<List<WarrantyItem>> build() async {
     final repository = ref.watch(warrantyRepositoryProvider);
 
-    // Automatically attempt silent sign-in on first load
-    // This populates the internal GoogleSignIn cache so sync works seamlessly
-    try {
-      final driveSource = ref.read(driveSyncDataSourceProvider);
-      await driveSource.silentSignIn();
-    } catch (e) {
-      dev.log(
-        'Initial Silent SignIn failed (expected if not logged in): $e',
-        name: 'WarrantyList',
-      );
-    }
-
+    // Since session restoration happens globally during initialization in main.dart,
+    // this build method loads the local database state instantly without blocking.
     return repository.getAllWarranties();
   }
 
   Future<void> scanAndAddWarranty(File image) async {
     dev.log('Starting scanAndAddWarranty', name: 'WarrantyList');
-    state = const AsyncValue.loading();
     try {
       final repository = ref.read(warrantyRepositoryProvider);
       dev.log('Extracting warranty from image...', name: 'WarrantyList');
@@ -114,6 +104,7 @@ class WarrantyList extends _$WarrantyList {
         error: e,
         stackTrace: st,
       );
+      // We only set the error state if the extraction actually fails
       state = AsyncValue.error(e, st);
     }
   }
@@ -235,4 +226,13 @@ FutureOr<List<WarrantyItem>> filteredWarranties(Ref ref) async {
     loading: () => [],
     error: (e, st) => [],
   );
+}
+
+// --- 7. UI State Providers ---
+@riverpod
+class DocumentScanning extends _$DocumentScanning {
+  @override
+  bool build() => false;
+
+  void setScanning(bool value) => state = value;
 }

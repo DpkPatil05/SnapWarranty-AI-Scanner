@@ -1,3 +1,4 @@
+import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -93,9 +94,16 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                   side: BorderSide(color: Colors.white.withValues(alpha: 0.2)),
                 ),
               ),
-              icon: _isBackingUp 
-                ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                : const FaIcon(FontAwesomeIcons.google, size: 18),
+              icon: _isBackingUp
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : const FaIcon(FontAwesomeIcons.google, size: 18),
               label: Text(_isBackingUp ? 'Backing up...' : 'Backup to Drive'),
             ),
           ),
@@ -143,8 +151,15 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                 ),
               ),
               icon: _isRestoring
-                ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                : const Icon(Icons.settings_backup_restore),
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : const Icon(Icons.settings_backup_restore),
               label: Text(_isRestoring ? 'Restoring...' : 'Restore from Drive'),
             ),
           ),
@@ -160,7 +175,11 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
         children: [
           const Row(
             children: [
-              Icon(Icons.notifications_active, color: Colors.orangeAccent, size: 28),
+              Icon(
+                Icons.notifications_active,
+                color: Colors.orangeAccent,
+                size: 28,
+              ),
               SizedBox(width: 12),
               Text(
                 'Reminders',
@@ -181,13 +200,19 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
           SizedBox(
             width: double.infinity,
             child: TextButton.icon(
-              onPressed: () => ref.read(notificationServiceProvider).requestPermissions(),
+              onPressed: () =>
+                  ref.read(notificationServiceProvider).requestPermissions(),
               icon: const Icon(Icons.settings, size: 18, color: Colors.white70),
-              label: const Text('Manage Permissions', style: TextStyle(color: Colors.white)),
+              label: const Text(
+                'Manage Permissions',
+                style: TextStyle(color: Colors.white),
+              ),
               style: TextButton.styleFrom(
                 backgroundColor: Colors.white.withValues(alpha: 0.1),
                 padding: const EdgeInsets.symmetric(vertical: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
             ),
           ),
@@ -200,9 +225,17 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     return GlassContainer(
       child: Column(
         children: [
-          _buildInfoRow(Icons.security, 'Private & Secure', 'Only you can access your Drive data.'),
+          _buildInfoRow(
+            Icons.security,
+            'Private & Secure',
+            'Only you can access your Drive data.',
+          ),
           const Divider(color: Colors.white10, height: 32),
-          _buildInfoRow(Icons.sync_lock, 'Encrypted Sync', 'Metadata is handled securely via OAuth2.'),
+          _buildInfoRow(
+            Icons.sync_lock,
+            'Encrypted Sync',
+            'Metadata is handled securely via OAuth2.',
+          ),
         ],
       ),
     );
@@ -216,8 +249,17 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-            Text(subtitle, style: const TextStyle(color: Colors.white54, fontSize: 12)),
+            Text(
+              title,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            Text(
+              subtitle,
+              style: const TextStyle(color: Colors.white54, fontSize: 12),
+            ),
           ],
         ),
       ],
@@ -228,26 +270,27 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     setState(() => _isBackingUp = true);
     try {
       GlassSnackBar.show(
-        context, 
+        context,
         message: 'Starting Google Drive Backup...',
         icon: Icons.sync,
       );
-      
+
       await ref.read(warrantyListProvider.notifier).syncToDrive();
 
       if (mounted) {
         GlassSnackBar.show(
-          context, 
+          context,
           message: 'Backup complete!',
           icon: Icons.check_circle,
           iconColor: Colors.greenAccent,
         );
       }
     } catch (e) {
+      developer.log('Error during backup', error: e, name: 'SettingsPage');
       if (mounted) {
         GlassSnackBar.show(
-          context, 
-          message: 'Backup failed: \$e',
+          context,
+          message: 'Backup failed: $e',
           icon: Icons.error_outline,
           isError: true,
         );
@@ -261,16 +304,16 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     setState(() => _isRestoring = true);
     try {
       GlassSnackBar.show(
-        context, 
+        context,
         message: 'Restoring from Google Drive...',
         icon: Icons.cloud_download,
       );
-      
+
       await ref.read(warrantyListProvider.notifier).restoreFromDrive();
 
       if (mounted) {
         GlassSnackBar.show(
-          context, 
+          context,
           message: 'Restore complete!',
           icon: Icons.check_circle,
           iconColor: Colors.greenAccent,
@@ -279,8 +322,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     } catch (e) {
       if (mounted) {
         GlassSnackBar.show(
-          context, 
-          message: 'Restore failed: \$e',
+          context,
+          message: 'Restore failed: $e',
           icon: Icons.error_outline,
           isError: true,
         );
