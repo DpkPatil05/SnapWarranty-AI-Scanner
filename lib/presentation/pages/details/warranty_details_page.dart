@@ -25,7 +25,7 @@ class WarrantyDetailsPage extends ConsumerWidget {
           data: (list) => list.firstWhereOrNull((i) => i.id == item.id),
           orElse: () => null,
         ) ??
-            item;
+        item;
 
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -90,10 +90,7 @@ class WarrantyDetailsPage extends ConsumerWidget {
                             File(currentItem.receiptImagePath!),
                             fit: BoxFit.cover,
                             width: double.infinity,
-                            height: MediaQuery
-                                .of(context)
-                                .size
-                                .height * 0.4,
+                            height: MediaQuery.of(context).size.height * 0.4,
                             errorBuilder: (context, error, stackTrace) {
                               return Container(
                                 height: 200,
@@ -139,7 +136,7 @@ class WarrantyDetailsPage extends ConsumerWidget {
                               icon: Icons.timer,
                               label: 'Warranty Duration',
                               value:
-                              '${currentItem.warrantyDurationMonths} Months',
+                                  '${currentItem.warrantyDurationMonths} Months',
                               trailing: const Icon(
                                 Icons.edit,
                                 color: Colors.white54,
@@ -217,40 +214,40 @@ class WarrantyDetailsPage extends ConsumerWidget {
     );
   }
 
-  Future<void> _confirmDelete(BuildContext context,
-      WidgetRef ref,
-      WarrantyItem item,) async {
+  Future<void> _confirmDelete(
+    BuildContext context,
+    WidgetRef ref,
+    WarrantyItem item,
+  ) async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) =>
-          AlertDialog(
-            backgroundColor: const Color(0xFF1E1B4B),
-            title: const Text(
-              'Delete Warranty?',
-              style: TextStyle(color: Colors.white),
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF1E1B4B),
+        title: const Text(
+          'Delete Warranty?',
+          style: TextStyle(color: Colors.white),
+        ),
+        content: Text(
+          'Are you sure you want to remove ${item.productName} from your vault?',
+          style: const TextStyle(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(color: Colors.white54),
             ),
-            content: Text(
-              'Are you sure you want to remove ${item
-                  .productName} from your vault?',
-              style: const TextStyle(color: Colors.white70),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context, false),
-                child: const Text(
-                  'Cancel',
-                  style: TextStyle(color: Colors.white54),
-                ),
-              ),
-              TextButton(
-                onPressed: () => Navigator.pop(context, true),
-                child: const Text(
-                  'Delete',
-                  style: TextStyle(color: Colors.redAccent),
-                ),
-              ),
-            ],
           ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text(
+              'Delete',
+              style: TextStyle(color: Colors.redAccent),
+            ),
+          ),
+        ],
+      ),
     );
 
     if (confirmed == true) {
@@ -267,9 +264,11 @@ class WarrantyDetailsPage extends ConsumerWidget {
     }
   }
 
-  Widget _buildAddExpiryOption(BuildContext context,
-      WidgetRef ref,
-      WarrantyItem item,) {
+  Widget _buildAddExpiryOption(
+    BuildContext context,
+    WidgetRef ref,
+    WarrantyItem item,
+  ) {
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -286,27 +285,29 @@ class WarrantyDetailsPage extends ConsumerWidget {
             children: [
               const Icon(Icons.add_circle_outline, color: Colors.blueAccent),
               const SizedBox(width: 12),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Set Expiration Date',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Set Expiration Date',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  ),
-                  Text(
-                    'Duration not found in receipt',
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.5),
-                      fontSize: 12,
+                    Text(
+                      'Duration not found in receipt',
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.5),
+                        fontSize: 12,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-              const Spacer(),
+              const SizedBox(width: 8),
               const Icon(Icons.calendar_month, color: Colors.white54, size: 20),
             ],
           ),
@@ -315,9 +316,11 @@ class WarrantyDetailsPage extends ConsumerWidget {
     );
   }
 
-  Future<void> _selectExpiryDate(BuildContext context,
-      WidgetRef ref,
-      WarrantyItem item,) async {
+  Future<void> _selectExpiryDate(
+    BuildContext context,
+    WidgetRef ref,
+    WarrantyItem item,
+  ) async {
     // Defensive logic for AI-extracted dates to prevent assertion errors
     final DateTime now = DateTime.now();
     final DateTime initialDate = item.purchaseDate.isAfter(now)
@@ -354,9 +357,7 @@ class WarrantyDetailsPage extends ConsumerWidget {
 
     if (picked != null) {
       // Calculate months roughly
-      final difference = picked
-          .difference(item.purchaseDate)
-          .inDays;
+      final difference = picked.difference(item.purchaseDate).inDays;
       final months = (difference / 30).round();
 
       final updatedItem = item.copyWith(warrantyDurationMonths: months);
@@ -421,27 +422,31 @@ class WarrantyDetailsPage extends ConsumerWidget {
           child: Icon(icon, color: Colors.white, size: 20),
         ),
         const SizedBox(width: 16),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              label,
-              style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.6),
-                fontSize: 12,
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.6),
+                  fontSize: 12,
+                ),
               ),
-            ),
-            Text(
-              value,
-              style: TextStyle(
-                color: valueColor ?? Colors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
+              Text(
+                value,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: valueColor ?? Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-        if (trailing != null) ...[const Spacer(), trailing],
+        if (trailing != null) ...[const SizedBox(width: 8), trailing],
       ],
     );
   }

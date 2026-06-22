@@ -16,4 +16,10 @@ abstract class WarrantyRepository {
 
   /// Updates an existing warranty item
   Future<void> updateWarranty(WarrantyItem item);
+
+  /// Syncs all data to Google Drive
+  Future<void> syncToDrive();
+
+  /// Restores data from Google Drive
+  Future<void> restoreFromDrive();
 }

@@ -8,6 +8,8 @@ import '../../data/repositories/warranty_repository_impl.dart';
 import '../../data/datasources/local/database/app_database.dart';
 import '../../data/datasources/local/dao/warranty_dao.dart';
 import '../../data/datasources/remote/gemini_remote_datasource.dart';
+import '../../data/datasources/remote/drive/drive_sync_datasource.dart';
+import '../../data/datasources/local/notification_service.dart';
 
 part 'warranty_provider.g.dart';
 
@@ -35,12 +37,23 @@ WarrantyDao warrantyDao(Ref ref) {
   return WarrantyDao(db);
 }
 
+@Riverpod(keepAlive: true)
+DriveSyncDataSource driveSyncDataSource(Ref ref) {
+  return DriveSyncDataSource();
+}
+
+@riverpod
+NotificationService notificationService(Ref ref) {
+  return NotificationService();
+}
+
 // --- 3. Repository ---
 @riverpod
 WarrantyRepository warrantyRepository(Ref ref) {
   return WarrantyRepositoryImpl(
     remoteDataSource: ref.watch(geminiDataSourceProvider),
     localDao: ref.watch(warrantyDaoProvider),
+    driveSyncDataSource: ref.watch(driveSyncDataSourceProvider),
   );
 }
 
@@ -50,6 +63,19 @@ class WarrantyList extends _$WarrantyList {
   @override
   FutureOr<List<WarrantyItem>> build() async {
     final repository = ref.watch(warrantyRepositoryProvider);
+
+    // Automatically attempt silent sign-in on first load
+    // This populates the internal GoogleSignIn cache so sync works seamlessly
+    try {
+      final driveSource = ref.read(driveSyncDataSourceProvider);
+      await driveSource.silentSignIn();
+    } catch (e) {
+      dev.log(
+        'Initial Silent SignIn failed (expected if not logged in): $e',
+        name: 'WarrantyList',
+      );
+    }
+
     return repository.getAllWarranties();
   }
 
@@ -69,7 +95,17 @@ class WarrantyList extends _$WarrantyList {
       await repository.saveWarranty(newItem);
       dev.log('Save success', name: 'WarrantyList');
 
-      // Refresh state
+      // Schedule Notification
+      if (newItem.expirationDate != null) {
+        await ref
+            .read(notificationServiceProvider)
+            .scheduleExpiryReminder(
+              id: newItem.id,
+              productName: newItem.productName,
+              expirationDate: newItem.expirationDate!,
+            );
+      }
+
       ref.invalidateSelf();
     } catch (e, st) {
       dev.log(
@@ -87,6 +123,10 @@ class WarrantyList extends _$WarrantyList {
     try {
       final repository = ref.read(warrantyRepositoryProvider);
       await repository.deleteWarranty(id);
+
+      // Cancel Notification
+      await ref.read(notificationServiceProvider).cancelReminder(id);
+
       dev.log('Delete success', name: 'WarrantyList');
       ref.invalidateSelf();
     } catch (e, st) {
@@ -105,6 +145,20 @@ class WarrantyList extends _$WarrantyList {
     try {
       final repository = ref.read(warrantyRepositoryProvider);
       await repository.updateWarranty(item);
+
+      // Reschedule Notification
+      if (item.expirationDate != null) {
+        await ref
+            .read(notificationServiceProvider)
+            .scheduleExpiryReminder(
+              id: item.id,
+              productName: item.productName,
+              expirationDate: item.expirationDate!,
+            );
+      } else {
+        await ref.read(notificationServiceProvider).cancelReminder(item.id);
+      }
+
       dev.log('Update success', name: 'WarrantyList');
       ref.invalidateSelf();
     } catch (e, st) {
@@ -114,6 +168,43 @@ class WarrantyList extends _$WarrantyList {
         error: e,
         stackTrace: st,
       );
+      state = AsyncValue.error(e, st);
+    }
+  }
+
+  Future<void> syncToDrive() async {
+    try {
+      final repository = ref.read(warrantyRepositoryProvider);
+      await repository.syncToDrive();
+    } catch (e, st) {
+      dev.log('Sync Error', error: e, stackTrace: st);
+      rethrow;
+    }
+  }
+
+  Future<void> restoreFromDrive() async {
+    state = const AsyncValue.loading();
+    try {
+      final repository = ref.read(warrantyRepositoryProvider);
+      await repository.restoreFromDrive();
+
+      // Reschedule all reminders after restore
+      final allItems = await repository.getAllWarranties();
+      for (final item in allItems) {
+        if (item.expirationDate != null) {
+          await ref
+              .read(notificationServiceProvider)
+              .scheduleExpiryReminder(
+                id: item.id,
+                productName: item.productName,
+                expirationDate: item.expirationDate!,
+              );
+        }
+      }
+
+      ref.invalidateSelf();
+    } catch (e, st) {
+      dev.log('Restore Error', error: e, stackTrace: st);
       state = AsyncValue.error(e, st);
     }
   }
