@@ -3,10 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mesh_gradient/mesh_gradient.dart';
 import 'package:gal/gal.dart';
-import 'package:collection/collection.dart'; // Added for firstWhereOrNull
+import 'package:collection/collection.dart';
 import '../../../domain/entities/warranty_item.dart';
 import '../../state/warranty_provider.dart';
 import '../../widgets/glass/glass_container.dart';
+import 'full_document_viewer.dart';
 
 class WarrantyDetailsPage extends ConsumerWidget {
   final WarrantyItem item;
@@ -44,7 +45,8 @@ class WarrantyDetailsPage extends ConsumerWidget {
           ),
         ),
         actions: [
-          if (currentItem.receiptImagePath != null)
+          if (currentItem.receiptImagePath != null &&
+              !currentItem.receiptImagePath!.toLowerCase().endsWith('.pdf'))
             IconButton(
               icon: const Icon(Icons.download, color: Colors.white),
               onPressed: () => _downloadReceipt(context, currentItem),
@@ -80,30 +82,77 @@ class WarrantyDetailsPage extends ConsumerWidget {
               child: Column(
                 children: [
                   if (currentItem.receiptImagePath != null)
-                    Hero(
-                      tag: 'receipt_${currentItem.id}',
-                      child: GlassContainer(
-                        padding: EdgeInsets.zero,
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(24),
-                          child: Image.file(
-                            File(currentItem.receiptImagePath!),
-                            fit: BoxFit.cover,
-                            width: double.infinity,
-                            height: MediaQuery.of(context).size.height * 0.4,
-                            errorBuilder: (context, error, stackTrace) {
-                              return Container(
-                                height: 200,
-                                color: Colors.white.withValues(alpha: 0.1),
-                                child: const Center(
-                                  child: Icon(
-                                    Icons.broken_image,
-                                    color: Colors.white,
-                                    size: 48,
+                    GestureDetector(
+                      onTap: () {
+                        // Routing to your custom FullDocumentViewer
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => FullDocumentViewer(
+                              path: currentItem.receiptImagePath!,
+                              title: currentItem.productName,
+                            ),
+                          ),
+                        );
+                      },
+                      child: Hero(
+                        tag: 'receipt_${currentItem.id}',
+                        child: GlassContainer(
+                          padding: EdgeInsets.zero,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(24),
+                            child:
+                                currentItem.receiptImagePath!
+                                    .toLowerCase()
+                                    .endsWith('.pdf')
+                                ? Container(
+                                    height:
+                                        MediaQuery.of(context).size.height *
+                                        0.4,
+                                    width: double.infinity,
+                                    color: Colors.white.withValues(alpha: 0.1),
+                                    child: const Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          Icons.picture_as_pdf,
+                                          color: Colors.redAccent,
+                                          size: 64,
+                                        ),
+                                        SizedBox(height: 16),
+                                        Text(
+                                          'Tap to view PDF document',
+                                          style: TextStyle(
+                                            color: Colors.white70,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  )
+                                : Image.file(
+                                    File(currentItem.receiptImagePath!),
+                                    fit: BoxFit.cover,
+                                    width: double.infinity,
+                                    height:
+                                        MediaQuery.of(context).size.height *
+                                        0.4,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return Container(
+                                        height: 200,
+                                        color: Colors.white.withValues(
+                                          alpha: 0.1,
+                                        ),
+                                        child: const Center(
+                                          child: Icon(
+                                            Icons.broken_image,
+                                            color: Colors.white,
+                                            size: 48,
+                                          ),
+                                        ),
+                                      );
+                                    },
                                   ),
-                                ),
-                              );
-                            },
                           ),
                         ),
                       ),
@@ -161,10 +210,12 @@ class WarrantyDetailsPage extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(height: 24),
-                  if (currentItem.receiptImagePath != null)
+                  if (currentItem.receiptImagePath != null &&
+                      !currentItem.receiptImagePath!.toLowerCase().endsWith(
+                        '.pdf',
+                      ))
                     GlassContainer(
                       padding: EdgeInsets.zero,
-                      // Material handles internal padding
                       child: Material(
                         color: Colors.transparent,
                         child: ListTile(
@@ -253,7 +304,7 @@ class WarrantyDetailsPage extends ConsumerWidget {
     if (confirmed == true) {
       await ref.read(warrantyListProvider.notifier).deleteWarranty(item.id);
       if (context.mounted) {
-        Navigator.pop(context); // Return to home page
+        Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('✅ Warranty deleted'),
@@ -321,15 +372,12 @@ class WarrantyDetailsPage extends ConsumerWidget {
     WidgetRef ref,
     WarrantyItem item,
   ) async {
-    // Defensive logic for AI-extracted dates to prevent assertion errors
     final DateTime now = DateTime.now();
     final DateTime initialDate = item.purchaseDate.isAfter(now)
         ? item.purchaseDate.add(const Duration(days: 365))
         : now.add(const Duration(days: 365));
 
     final DateTime firstDate = item.purchaseDate;
-
-    // Ensure lastDate is always at least 10 years after firstDate
     final DateTime lastDate = firstDate.add(const Duration(days: 365 * 20));
 
     final DateTime? picked = await showDatePicker(
@@ -356,7 +404,6 @@ class WarrantyDetailsPage extends ConsumerWidget {
     );
 
     if (picked != null) {
-      // Calculate months roughly
       final difference = picked.difference(item.purchaseDate).inDays;
       final months = (difference / 30).round();
 

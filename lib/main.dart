@@ -1,22 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'data/datasources/local/notification_service.dart';
+import 'core/initialization/app_initializers.dart';
 import 'presentation/app.dart';
-import 'firebase_options.dart';
 
+/// The Entry Point of the application.
+///
+/// Following the modular architecture refactor, all heavy setup logic
+/// (Firebase, Drive Auth, .env, Notifications) has been moved
+/// to [AppInitializers] in the core layer.
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  // Execute the boot sequence
+  AppInitializers.init();
 
-  // Load the environment variables
-  await dotenv.load(fileName: ".env");
-
-  // Initialize Firebase (Required for background core features)
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-
-  // Initialize Notifications
-  await NotificationService().initialize();
-
+  // Launch the App within a ProviderScope for Riverpod 3.x state management
   runApp(const ProviderScope(child: SnapWarrantyApp()));
 }
