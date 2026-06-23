@@ -7,7 +7,7 @@ class SnapWarrantyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'SnapWarranty',
+      title: 'SnapWarranty: AI Scanner',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         useMaterial3: true,
