@@ -5,10 +5,7 @@ import 'package:in_app_review/in_app_review.dart';
 import '../config/remote_config_service.dart';
 import 'dart:developer' as dev;
 
-enum AdTriggerType {
-  fileAddition,
-  detailView,
-}
+enum AdTriggerType { fileAddition, detailView }
 
 class AdService {
   AdService._internal();
@@ -25,7 +22,7 @@ class AdService {
     AdTriggerType.detailView: 'ad_view_count',
   };
 
-  // Android IDs from user
+  // Android IDs
   static const String _androidBannerUnitId =
       'ca-app-pub-9516145980064327/3153691224';
   static const String _androidInterstitialUnitId =
@@ -153,5 +150,10 @@ class AdService {
       dev.log('Interstitial Ad not ready yet.', name: 'AdService');
       loadInterstitialAd();
     }
+  }
+
+  /// Starts preloading ads.
+  void init() {
+    loadInterstitialAd();
   }
 }

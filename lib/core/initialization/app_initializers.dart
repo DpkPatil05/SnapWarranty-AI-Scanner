@@ -3,6 +3,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import '../ads/ad_service.dart';
 import '../config/remote_config_service.dart';
 import '../../firebase_options.dart';
 import '../../data/datasources/local/notification_service.dart';
@@ -82,6 +83,7 @@ class AppInitializers {
   static Future<void> _initMobileAds() async {
     dev.log('Initializing Mobile Ads...', name: 'AppInitializers');
     await MobileAds.instance.initialize();
+    AdService.instance.init();
   }
 
   static Future<void> _initRemoteConfig() async {
