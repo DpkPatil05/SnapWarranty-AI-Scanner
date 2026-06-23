@@ -65,8 +65,30 @@ dev_dependencies:
   drift_dev: ^2.34.0
   riverpod_generator: ^4.0.4
 
+  # --- Asset Generation ---
+  flutter_launcher_icons: ^0.14.4
+  flutter_native_splash: ^2.4.8
+
 flutter:
   uses-material-design: true
 
   assets:
     - .env
+    - assets/icon.png
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/icon.png"
+  min_sdk_android: 21
+  # ADAPTIVE ICON CONFIGURATION (Ensures circular look on Android)
+  adaptive_icon_background: "#0F172A"
+  adaptive_icon_foreground: "assets/icon.png"
+
+flutter_native_splash:
+  color: "#0F172A"
+  image: "assets/icon.png"
+  android_12:
+    color: "#0F172A"
+    icon_background_color: "#0F172A"
+    image: "assets/icon.png"
