@@ -2,6 +2,7 @@ import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import '../../widgets/glass/glass_container.dart';
 import '../../widgets/glass/glass_snackbar.dart';
 import '../../widgets/glass/liquid_glass_background.dart';
@@ -17,6 +18,22 @@ class SettingsPage extends ConsumerStatefulWidget {
 class _SettingsPageState extends ConsumerState<SettingsPage> {
   bool _isBackingUp = false;
   bool _isRestoring = false;
+  String _version = '...';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadAppInfo();
+  }
+
+  Future<void> _loadAppInfo() async {
+    final info = await PackageInfo.fromPlatform();
+    if (mounted) {
+      setState(() {
+        _version = '${info.version}+${info.buildNumber}';
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -48,6 +65,16 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                 _buildNotificationCard(),
                 const SizedBox(height: 24),
                 _buildInfoCard(),
+                const SizedBox(height: 24),
+                Center(
+                  child: Text(
+                    'Version $_version',
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.3),
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
@@ -268,15 +295,20 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
 
   Future<void> _handleSync() async {
     setState(() => _isBackingUp = true);
+    final analytics = ref.read(analyticsServiceProvider);
     try {
-      GlassSnackBar.show(
-        context,
-        message: 'Starting Google Drive Backup...',
-        icon: Icons.sync,
-      );
+      await analytics.logSyncStarted();
+      if (mounted) {
+        GlassSnackBar.show(
+          context,
+          message: 'Starting Google Drive Backup...',
+          icon: Icons.sync,
+        );
+      }
 
       await ref.read(warrantyListProvider.notifier).syncToDrive();
 
+      await analytics.logSyncCompleted(true);
       if (mounted) {
         GlassSnackBar.show(
           context,
@@ -303,11 +335,13 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   Future<void> _handleRestore() async {
     setState(() => _isRestoring = true);
     try {
-      GlassSnackBar.show(
-        context,
-        message: 'Restoring from Google Drive...',
-        icon: Icons.cloud_download,
-      );
+      if (mounted) {
+        GlassSnackBar.show(
+          context,
+          message: 'Restoring from Google Drive...',
+          icon: Icons.cloud_download,
+        );
+      }
 
       await ref.read(warrantyListProvider.notifier).restoreFromDrive();
 

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
+import '../config/remote_config_service.dart';
 import '../../firebase_options.dart';
 import '../../data/datasources/local/notification_service.dart';
 import '../../data/datasources/remote/drive/drive_sync_datasource.dart';
@@ -28,6 +30,12 @@ class AppInitializers {
 
       // 5. Initialize Local Notification System
       await _initNotifications();
+
+      // 6. Initialize Mobile Ads
+      await _initMobileAds();
+
+      // 7. Initialize Remote Config
+      await _initRemoteConfig();
 
       dev.log('Boot sequence complete!', name: 'AppInitializers');
     } catch (e, st) {
@@ -69,5 +77,15 @@ class AppInitializers {
   static Future<void> _initNotifications() async {
     dev.log('Initializing Notifications...', name: 'AppInitializers');
     await NotificationService().initialize();
+  }
+
+  static Future<void> _initMobileAds() async {
+    dev.log('Initializing Mobile Ads...', name: 'AppInitializers');
+    await MobileAds.instance.initialize();
+  }
+
+  static Future<void> _initRemoteConfig() async {
+    dev.log('Initializing Remote Config...', name: 'AppInitializers');
+    await RemoteConfigService.instance.init();
   }
 }

@@ -306,7 +306,7 @@ final class WarrantyListProvider
   WarrantyList create() => WarrantyList();
 }
 
-String _$warrantyListHash() => r'9e2006de0b4d9104ad06e9156918d1e77673cd13';
+String _$warrantyListHash() => r'3347ea07eaf71e0ac8495ae62cc7e85107c8531c';
 
 abstract class _$WarrantyList extends $AsyncNotifier<List<WarrantyItem>> {
   FutureOr<List<WarrantyItem>> build();

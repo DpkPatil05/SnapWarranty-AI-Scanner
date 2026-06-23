@@ -472,11 +472,20 @@ class HomePage extends ConsumerWidget {
     final picker = ImagePicker();
     final image = await picker.pickImage(source: source);
     if (image != null) {
+      final adService = ref.read(adServiceProvider);
+      final analytics = ref.read(analyticsServiceProvider);
       try {
+        await analytics.logScanStarted(source.name);
         ref.read(documentScanningProvider.notifier).setScanning(true);
         await ref
             .read(warrantyListProvider.notifier)
             .scanAndAddWarranty(File(image.path));
+        // Increment ad counter after successful addition
+        await adService.incrementAdditionCounter();
+        await analytics.logScanCompleted('Unknown (Scanned)', true);
+      } catch (e) {
+        await analytics.logScanCompleted('Unknown (Failed)', false);
+        rethrow;
       } finally {
         ref.read(documentScanningProvider.notifier).setScanning(false);
       }
@@ -493,11 +502,20 @@ class HomePage extends ConsumerWidget {
     );
 
     if (result != null && result.files.single.path != null) {
+      final adService = ref.read(adServiceProvider);
+      final analytics = ref.read(analyticsServiceProvider);
       try {
+        await analytics.logScanStarted('pdf');
         ref.read(documentScanningProvider.notifier).setScanning(true);
         await ref
             .read(warrantyListProvider.notifier)
             .scanAndAddWarranty(File(result.files.single.path!));
+        // Increment ad counter after successful addition
+        await adService.incrementAdditionCounter();
+        await analytics.logScanCompleted('Unknown (PDF)', true);
+      } catch (e) {
+        await analytics.logScanCompleted('Unknown (PDF Failed)', false);
+        rethrow;
       } finally {
         ref.read(documentScanningProvider.notifier).setScanning(false);
       }
