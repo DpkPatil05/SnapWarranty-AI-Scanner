@@ -63,7 +63,7 @@ class AppInitializers {
   static Future<void> _initDriveAuth() async {
     dev.log('Restoring Drive session...', name: 'AppInitializers');
     // Using instance.silentSignIn() to match the optimized persistence logic
-    await DriveSyncDataSource().silentSignIn();
+    await DriveSyncDataSource.instance.restoreSession();
   }
 
   static Future<void> _initNotifications() async {
