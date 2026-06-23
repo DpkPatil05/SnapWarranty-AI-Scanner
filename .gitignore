@@ -120,3 +120,6 @@ app.*.symbols
 
 # Secret Environment Variables
 .env
+
+# Android Release Keystore
+android/key.properties

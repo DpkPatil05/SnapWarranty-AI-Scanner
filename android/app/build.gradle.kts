@@ -7,10 +7,28 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+// Load the properties from your key.properties file
+val keyProperties = Properties().apply {
+    val keyPropertiesFile = rootProject.file("key.properties")
+    if (keyPropertiesFile.exists()) {
+        load(FileInputStream(keyPropertiesFile))
+    }
+}
+
 android {
     namespace = "com.deepx.snap_warranty"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
+
+    // Define the signing configuration
+    signingConfigs {
+        create("release") {
+            keyAlias = keyProperties.getProperty("keyAlias")
+            keyPassword = keyProperties.getProperty("keyPassword")
+            storeFile = file(keyProperties.getProperty("storeFile"))
+            storePassword = keyProperties.getProperty("storePassword")
+        }
+    }
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -27,7 +45,8 @@ android {
         applicationId = "com.deepx.snap_warranty"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion // Minimum for some plugins, though flutter.minSdkVersion is usually 21+
+        minSdk =
+            flutter.minSdkVersion // Minimum for some plugins, though flutter.minSdkVersion is usually 21+
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
@@ -37,7 +56,7 @@ android {
     dependencies {
         // Core library desugaring for Java 8+ API support on older devices (Required by flutter_local_notifications)
         coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
-        
+
         // Import the Firebase BoM
         implementation(platform("com.google.firebase:firebase-bom:34.15.0"))
         // Add the dependencies for Firebase products you want to use
@@ -47,14 +66,12 @@ android {
 
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
-            
+            signingConfig = signingConfigs.getByName("release")
+
             // Enable R8 code minification and resource shrinking for production
             isMinifyEnabled = true
             isShrinkResources = true
-            
+
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
