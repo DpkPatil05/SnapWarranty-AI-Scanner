@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gal/gal.dart';
 import 'package:collection/collection.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
+import '../../../core/ads/ad_service.dart';
 import '../../../domain/entities/warranty_item.dart';
 import '../../state/warranty_provider.dart';
 import '../../widgets/glass/glass_container.dart';
@@ -12,21 +14,69 @@ import '../../widgets/glass/glass_snackbar.dart';
 import '../../widgets/glass/liquid_glass_background.dart';
 import 'full_document_viewer.dart';
 
-class WarrantyDetailsPage extends ConsumerWidget {
+class WarrantyDetailsPage extends ConsumerStatefulWidget {
   final WarrantyItem item;
 
   const WarrantyDetailsPage({super.key, required this.item});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<WarrantyDetailsPage> createState() =>
+      _WarrantyDetailsPageState();
+}
+
+class _WarrantyDetailsPageState extends ConsumerState<WarrantyDetailsPage> {
+  BannerAd? _bannerAd;
+  bool _isBannerAdLoaded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final adService = ref.read(adServiceProvider);
+      final analytics = ref.read(analyticsServiceProvider);
+
+      _loadBannerAd(adService);
+      adService.loadInterstitialAd();
+      adService.incrementViewCounter();
+      analytics.logWarrantyViewed(widget.item.id, widget.item.productName);
+    });
+  }
+
+  @override
+  void dispose() {
+    _bannerAd?.dispose();
+    super.dispose();
+  }
+
+  void _loadBannerAd(AdService adService) {
+    _bannerAd = BannerAd(
+      adUnitId: adService.bannerAdUnitId,
+      size: AdSize.banner,
+      request: const AdRequest(),
+      listener: BannerAdListener(
+        onAdLoaded: (ad) {
+          setState(() {
+            _isBannerAdLoaded = true;
+          });
+        },
+        onAdFailedToLoad: (ad, error) {
+          ad.dispose();
+          debugPrint('BannerAd failed to load: $error');
+        },
+      ),
+    )..load();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final warrantiesAsync = ref.watch(warrantyListProvider);
 
     final currentItem =
         warrantiesAsync.maybeWhen(
-          data: (list) => list.firstWhereOrNull((i) => i.id == item.id),
+          data: (list) => list.firstWhereOrNull((i) => i.id == widget.item.id),
           orElse: () => null,
         ) ??
-        item;
+        widget.item;
 
     final isPdf =
         currentItem.receiptImagePath?.toLowerCase().endsWith('.pdf') ?? false;
@@ -72,6 +122,7 @@ class WarrantyDetailsPage extends ConsumerWidget {
                   if (currentItem.receiptImagePath != null)
                     GestureDetector(
                       onTap: () {
+                        ref.read(adServiceProvider).showInterstitialAd();
                         Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -214,7 +265,10 @@ class WarrantyDetailsPage extends ConsumerWidget {
                       child: Material(
                         color: Colors.transparent,
                         child: ListTile(
-                          onTap: () => _downloadReceipt(context, currentItem),
+                          onTap: () {
+                            ref.read(adServiceProvider).showInterstitialAd();
+                            _downloadReceipt(context, currentItem);
+                          },
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(24),
                           ),
@@ -259,6 +313,13 @@ class WarrantyDetailsPage extends ConsumerWidget {
           ),
         ],
       ),
+      bottomNavigationBar: _isBannerAdLoaded
+          ? SizedBox(
+              height: _bannerAd!.size.height.toDouble(),
+              width: _bannerAd!.size.width.toDouble(),
+              child: AdWidget(ad: _bannerAd!),
+            )
+          : null,
     );
   }
 

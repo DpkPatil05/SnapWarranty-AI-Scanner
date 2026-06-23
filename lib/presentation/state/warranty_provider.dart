@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:developer' as dev;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../domain/entities/warranty_item.dart';
 import '../../domain/repositories/warranty_repository.dart';
@@ -10,6 +11,9 @@ import '../../data/datasources/local/dao/warranty_dao.dart';
 import '../../data/datasources/remote/gemini_remote_datasource.dart';
 import '../../data/datasources/remote/drive/drive_sync_datasource.dart';
 import '../../data/datasources/local/notification_service.dart';
+import '../../core/ads/ad_service.dart';
+import '../../core/analytics/analytics_service.dart';
+import '../../core/config/remote_config_service.dart';
 
 part 'warranty_provider.g.dart';
 
@@ -47,6 +51,15 @@ DriveSyncDataSource driveSyncDataSource(Ref ref) {
 NotificationService notificationService(Ref ref) {
   return NotificationService();
 }
+
+// --- Ad & Analytics Providers ---
+final adServiceProvider = Provider<AdService>((ref) => AdService.instance);
+final analyticsServiceProvider = Provider<AnalyticsService>(
+  (ref) => AnalyticsService.instance,
+);
+final remoteConfigServiceProvider = Provider<RemoteConfigService>(
+  (ref) => RemoteConfigService.instance,
+);
 
 // --- 3. Repository ---
 @riverpod
