@@ -31,3 +31,6 @@
 -keepattributes Signature
 -keepattributes *Annotation*
 -keepattributes EnclosingMethod
+
+# --- Fix R8 Missing Class Errors (Play Core) ---
+-dontwarn com.google.android.play.core.**
