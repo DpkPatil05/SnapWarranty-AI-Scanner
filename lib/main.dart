@@ -10,7 +10,7 @@ import 'presentation/app.dart';
 /// to [AppInitializers] in the core layer.
 void main() async {
   // Execute the boot sequence
-  AppInitializers.init();
+  await AppInitializers.init();
 
   // Launch the App within a ProviderScope for Riverpod 3.x state management
   runApp(const ProviderScope(child: SnapWarrantyApp()));

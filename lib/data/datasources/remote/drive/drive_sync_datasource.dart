@@ -26,6 +26,7 @@ class DriveSyncDataSource {
   final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
 
   bool _initialized = false;
+  Future<void>? _initFuture;
   GoogleSignInAccount? _currentUser;
 
   /// True when we already have a valid signed-in account in memory.
@@ -33,19 +34,36 @@ class DriveSyncDataSource {
 
   Future<void> _ensureInitialized() async {
     if (_initialized) return;
-    await _googleSignIn.initialize();
-    _initialized = true;
+    if (_initFuture != null) return _initFuture;
 
-    // Keep _currentUser in sync with platform-level auth events.
-    _googleSignIn.authenticationEvents.listen((event) {
-      if (event is GoogleSignInAuthenticationEventSignIn) {
-        _currentUser = event.user;
-        dev.log('Session updated: ${_currentUser?.email}', name: 'DriveSync');
-      } else if (event is GoogleSignInAuthenticationEventSignOut) {
-        _currentUser = null;
-        dev.log('Session cleared (SignOut)', name: 'DriveSync');
-      }
-    });
+    _initFuture = _doInitialize();
+    return _initFuture;
+  }
+
+  Future<void> _doInitialize() async {
+    try {
+      dev.log('Initializing GoogleSignIn...', name: 'DriveSync');
+      await _googleSignIn.initialize(
+        serverClientId:
+            '1077184882408-efj104rtvf4k24od9e447seqlevgsehp.apps.googleusercontent.com',
+      );
+      _initialized = true;
+
+      // Keep _currentUser in sync with platform-level auth events.
+      _googleSignIn.authenticationEvents.listen((event) {
+        if (event is GoogleSignInAuthenticationEventSignIn) {
+          _currentUser = event.user;
+          dev.log('Session updated: ${_currentUser?.email}', name: 'DriveSync');
+        } else if (event is GoogleSignInAuthenticationEventSignOut) {
+          _currentUser = null;
+          dev.log('Session cleared (SignOut)', name: 'DriveSync');
+        }
+      });
+    } catch (e) {
+      _initFuture = null; // Allow retry
+      dev.log('GoogleSignIn initialization failed: $e', name: 'DriveSync');
+      rethrow;
+    }
   }
 
   /// Call this once at app startup (e.g. in main.dart or a top-level provider).
