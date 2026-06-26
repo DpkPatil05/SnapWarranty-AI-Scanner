@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'dart:io';
 
 import '../../state/warranty_provider.dart';
@@ -11,18 +12,49 @@ import '../../widgets/glass/liquid_glass_background.dart';
 import '../details/warranty_details_page.dart';
 import '../settings/settings_page.dart';
 
-class HomePage extends ConsumerWidget {
+class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends ConsumerState<HomePage> {
+  BannerAd? _bannerAd;
+  bool _isBannerAdLoaded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initBannerAd();
+    });
+  }
+
+  @override
+  void dispose() {
+    _bannerAd?.dispose();
+    super.dispose();
+  }
+
+  void _initBannerAd() {
+    final adService = ref.read(adServiceProvider);
+    _bannerAd = adService.createBannerAd(
+      logLabel: 'Home',
+      onAdLoaded: (_) {
+        if (mounted) setState(() => _isBannerAdLoaded = true);
+      },
+      onAdFailedToLoad: (ad, _) {
+        ad.dispose();
+        if (mounted) setState(() => _isBannerAdLoaded = false);
+      },
+    )..load();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final warrantiesAsync = ref.watch(filteredWarrantiesProvider);
     final isScanning = ref.watch(documentScanningProvider);
-
-    // Request Notification Permissions on startup
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      // Assuming your notification service initialization lives here
-    });
 
     // Listen for scanning errors to show SnackBar
     ref.listen(warrantyListProvider, (previous, next) {
@@ -47,13 +79,13 @@ class HomePage extends ConsumerWidget {
           SafeArea(
             child: CustomScrollView(
               slivers: [
-                _buildAppBar(context, ref),
+                _buildAppBar(context),
                 warrantiesAsync.when(
                   data: (warranties) {
                     if (warranties.isEmpty) {
-                      return _buildEmptyState(ref);
+                      return _buildEmptyState();
                     }
-                    return _buildWarrantyList(context, ref, warranties);
+                    return _buildWarrantyList(context, warranties);
                   },
                   loading: () => const SliverFillRemaining(
                     child: Center(
@@ -63,8 +95,8 @@ class HomePage extends ConsumerWidget {
                   error: (e, _) =>
                       (warrantiesAsync.hasValue &&
                           warrantiesAsync.value!.isNotEmpty)
-                      ? _buildWarrantyList(context, ref, warrantiesAsync.value!)
-                      : _buildEmptyState(ref),
+                      ? _buildWarrantyList(context, warrantiesAsync.value!)
+                      : _buildEmptyState(),
                 ),
               ],
             ),
@@ -108,11 +140,20 @@ class HomePage extends ConsumerWidget {
             ),
         ],
       ),
-      floatingActionButton: _buildFloatingActionButton(context, ref),
+      floatingActionButton: _buildFloatingActionButton(context),
+      bottomNavigationBar: _isBannerAdLoaded
+          ? SafeArea(
+              child: SizedBox(
+                height: _bannerAd!.size.height.toDouble(),
+                width: _bannerAd!.size.width.toDouble(),
+                child: AdWidget(ad: _bannerAd!),
+              ),
+            )
+          : null,
     );
   }
 
-  Widget _buildAppBar(BuildContext context, WidgetRef ref) {
+  Widget _buildAppBar(BuildContext context) {
     return SliverPadding(
       padding: const EdgeInsets.all(24.0),
       sliver: SliverToBoxAdapter(
@@ -160,14 +201,14 @@ class HomePage extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: 24),
-            _buildSearchBar(ref),
+            _buildSearchBar(),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildSearchBar(WidgetRef ref) {
+  Widget _buildSearchBar() {
     return GlassContainer(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       borderRadius: 16,
@@ -185,7 +226,7 @@ class HomePage extends ConsumerWidget {
     );
   }
 
-  Widget _buildEmptyState(WidgetRef ref) {
+  Widget _buildEmptyState() {
     final query = ref.watch(searchQueryProvider);
     final isSearching = query.isNotEmpty;
 
@@ -232,11 +273,7 @@ class HomePage extends ConsumerWidget {
     );
   }
 
-  Widget _buildWarrantyList(
-    BuildContext context,
-    WidgetRef ref,
-    List<dynamic> warranties,
-  ) {
+  Widget _buildWarrantyList(BuildContext context, List<dynamic> warranties) {
     return SliverPadding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       sliver: SliverList(
@@ -374,9 +411,9 @@ class HomePage extends ConsumerWidget {
     );
   }
 
-  Widget _buildFloatingActionButton(BuildContext context, WidgetRef ref) {
+  Widget _buildFloatingActionButton(BuildContext context) {
     return FloatingActionButton.extended(
-      onPressed: () => _showImageSourceSheet(context, ref),
+      onPressed: () => _showImageSourceSheet(context),
       backgroundColor: Colors.white.withValues(alpha: 0.2),
       elevation: 0,
       label: const Text('Add Document', style: TextStyle(color: Colors.white)),
@@ -388,7 +425,7 @@ class HomePage extends ConsumerWidget {
     );
   }
 
-  void _showImageSourceSheet(BuildContext context, WidgetRef ref) {
+  void _showImageSourceSheet(BuildContext context) {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -414,19 +451,19 @@ class HomePage extends ConsumerWidget {
                   context: context,
                   icon: Icons.camera_alt,
                   label: 'Camera',
-                  onTap: () => _pickImage(ref, ImageSource.camera, context),
+                  onTap: () => _pickImage(ImageSource.camera, context),
                 ),
                 _buildSourceOption(
                   context: context,
                   icon: Icons.photo_library,
                   label: 'Gallery',
-                  onTap: () => _pickImage(ref, ImageSource.gallery, context),
+                  onTap: () => _pickImage(ImageSource.gallery, context),
                 ),
                 _buildSourceOption(
                   context: context,
                   icon: Icons.picture_as_pdf,
                   label: 'PDF',
-                  onTap: () => _pickPdf(ref, context),
+                  onTap: () => _pickPdf(context),
                 ),
               ],
             ),
@@ -463,11 +500,7 @@ class HomePage extends ConsumerWidget {
     );
   }
 
-  Future<void> _pickImage(
-    WidgetRef ref,
-    ImageSource source,
-    BuildContext context,
-  ) async {
+  Future<void> _pickImage(ImageSource source, BuildContext context) async {
     Navigator.pop(context);
     final picker = ImagePicker();
     final image = await picker.pickImage(source: source);
@@ -492,7 +525,7 @@ class HomePage extends ConsumerWidget {
     }
   }
 
-  Future<void> _pickPdf(WidgetRef ref, BuildContext context) async {
+  Future<void> _pickPdf(BuildContext context) async {
     Navigator.pop(context);
 
     // Reverted back to the standard pickFiles() method

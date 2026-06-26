@@ -9,15 +9,14 @@ class AppConstants {
   static const String driveFolderName = 'SnapWarranty_Backups';
   static const String metadataFileName = 'sync_metadata.json';
 
-  // AdMob (Test IDs)
-  static const String androidBannerTestId =
-      'ca-app-pub-3940256099942544/6300978111';
-  static const String androidInterstitialTestId =
-      'ca-app-pub-3940256099942544/1033173712';
-  static const String iosBannerTestId =
-      'ca-app-pub-3940256099942544/2934735716';
-  static const String iosInterstitialTestId =
-      'ca-app-pub-3940256099942544/4411468910';
+  // AdMob (Real IDs)
+  static const String androidBannerId =
+      'ca-app-pub-9516145980064327/3153691224';
+  static const String androidInterstitialId =
+      'ca-app-pub-9516145980064327/7146686798';
+  static const String iosBannerId = 'ca-app-pub-9516145980064327/3153691224';
+  static const String iosInterstitialId =
+      'ca-app-pub-9516145980064327/7146686798';
 
   // Google Sign-In
   static const String webClientId =

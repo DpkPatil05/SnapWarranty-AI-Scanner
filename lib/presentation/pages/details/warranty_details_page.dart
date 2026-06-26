@@ -49,21 +49,15 @@ class _WarrantyDetailsPageState extends ConsumerState<WarrantyDetailsPage> {
   }
 
   void _loadBannerAd(IAdService adService) {
-    _bannerAd = BannerAd(
-      adUnitId: adService.bannerAdUnitId,
-      size: AdSize.banner,
-      request: const AdRequest(),
-      listener: BannerAdListener(
-        onAdLoaded: (ad) {
-          setState(() {
-            _isBannerAdLoaded = true;
-          });
-        },
-        onAdFailedToLoad: (ad, error) {
-          ad.dispose();
-          debugPrint('BannerAd failed to load: $error');
-        },
-      ),
+    _bannerAd = adService.createBannerAd(
+      logLabel: 'Details',
+      onAdLoaded: (_) {
+        if (mounted) setState(() => _isBannerAdLoaded = true);
+      },
+      onAdFailedToLoad: (ad, error) {
+        ad.dispose();
+        if (mounted) setState(() => _isBannerAdLoaded = false);
+      },
     )..load();
   }
 
