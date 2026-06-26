@@ -44,9 +44,7 @@ class DriveSyncDataSource {
   Future<void> _doInitialize() async {
     try {
       dev.log('Initializing GoogleSignIn...', name: 'DriveSync');
-      await _googleSignIn.initialize(
-        serverClientId: AppConstants.webClientId,
-      );
+      await _googleSignIn.initialize(serverClientId: AppConstants.webClientId);
       _initialized = true;
 
       // Keep _currentUser in sync with platform-level auth events.

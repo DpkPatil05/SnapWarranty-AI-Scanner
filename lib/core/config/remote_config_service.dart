@@ -11,13 +11,13 @@ class RemoteConfigService {
 
   Future<void> init() async {
     try {
-      await _remoteConfig.setDefaults({
-        keyAdFrequency: 3,
-      });
-      await _remoteConfig.setConfigSettings(RemoteConfigSettings(
-        fetchTimeout: const Duration(minutes: 1),
-        minimumFetchInterval: const Duration(hours: 1),
-      ));
+      await _remoteConfig.setDefaults({keyAdFrequency: 3});
+      await _remoteConfig.setConfigSettings(
+        RemoteConfigSettings(
+          fetchTimeout: const Duration(minutes: 1),
+          minimumFetchInterval: const Duration(hours: 1),
+        ),
+      );
       await _remoteConfig.fetchAndActivate();
     } catch (e) {
       dev.log('Remote Config init failed: $e', name: 'RemoteConfigService');
