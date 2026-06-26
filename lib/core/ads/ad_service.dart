@@ -3,11 +3,13 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:in_app_review/in_app_review.dart';
 import '../config/remote_config_service.dart';
+import '../constants/app_constants.dart';
+import '../../domain/services/ad_service_interface.dart';
 import 'dart:developer' as dev;
 
 enum AdTriggerType { fileAddition, detailView }
 
-class AdService {
+class AdService implements IAdService {
   AdService._internal();
 
   static final AdService instance = AdService._internal();
@@ -22,42 +24,34 @@ class AdService {
     AdTriggerType.detailView: 'ad_view_count',
   };
 
-  // Android IDs
-  static const String _androidBannerUnitId =
-      'ca-app-pub-9516145980064327/3153691224';
-  static const String _androidInterstitialUnitId =
-      'ca-app-pub-9516145980064327/7146686798';
-
-  // iOS Test IDs (since real ones were not provided)
-  static const String _iosBannerUnitId =
-      'ca-app-pub-3940256099942544/2934735716';
-  static const String _iosInterstitialUnitId =
-      'ca-app-pub-3940256099942544/4411468910';
-
+  @override
   String get bannerAdUnitId {
     if (Platform.isAndroid) {
-      return _androidBannerUnitId;
+      return AppConstants.androidBannerTestId;
     } else if (Platform.isIOS) {
-      return _iosBannerUnitId;
+      return AppConstants.iosBannerTestId;
     }
     throw UnsupportedError('Unsupported platform');
   }
 
+  @override
   String get interstitialAdUnitId {
     if (Platform.isAndroid) {
-      return _androidInterstitialUnitId;
+      return AppConstants.androidInterstitialTestId;
     } else if (Platform.isIOS) {
-      return _iosInterstitialUnitId;
+      return AppConstants.iosInterstitialTestId;
     }
     throw UnsupportedError('Unsupported platform');
   }
 
   /// Increments the file addition counter and shows an ad based on frequency.
+  @override
   Future<void> incrementAdditionCounter() async {
     await _incrementAndCheckCounter(AdTriggerType.fileAddition);
   }
 
   /// Increments the detail view counter and shows an ad based on frequency.
+  @override
   Future<void> incrementViewCounter() async {
     await _incrementAndCheckCounter(AdTriggerType.detailView);
   }
@@ -99,6 +93,7 @@ class AdService {
   }
 
   /// Loads an interstitial ad.
+  @override
   void loadInterstitialAd() {
     if (_isInterstitialAdLoading || _interstitialAd != null) return;
 
@@ -142,6 +137,7 @@ class AdService {
   }
 
   /// Shows the interstitial ad if loaded.
+  @override
   void showInterstitialAd() {
     if (_interstitialAd != null) {
       dev.log('Showing Interstitial Ad...', name: 'AdService');
@@ -153,6 +149,7 @@ class AdService {
   }
 
   /// Starts preloading ads.
+  @override
   void init() {
     loadInterstitialAd();
   }

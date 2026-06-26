@@ -14,6 +14,9 @@ import '../../data/datasources/local/notification_service.dart';
 import '../../core/ads/ad_service.dart';
 import '../../core/analytics/analytics_service.dart';
 import '../../core/config/remote_config_service.dart';
+import '../../domain/analytics/analytics_service_interface.dart';
+import '../../domain/services/ad_service_interface.dart';
+import '../../domain/services/notification_service_interface.dart';
 
 part 'warranty_provider.g.dart';
 
@@ -48,13 +51,13 @@ DriveSyncDataSource driveSyncDataSource(Ref ref) {
 }
 
 @riverpod
-NotificationService notificationService(Ref ref) {
+INotificationService notificationService(Ref ref) {
   return NotificationService();
 }
 
 // --- Ad & Analytics Providers ---
-final adServiceProvider = Provider<AdService>((ref) => AdService.instance);
-final analyticsServiceProvider = Provider<AnalyticsService>(
+final adServiceProvider = Provider<IAdService>((ref) => AdService.instance);
+final analyticsServiceProvider = Provider<IAnalyticsService>(
   (ref) => AnalyticsService.instance,
 );
 final remoteConfigServiceProvider = Provider<RemoteConfigService>(
