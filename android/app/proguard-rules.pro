@@ -10,6 +10,18 @@
 -keep class com.google.firebase.** { *; }
 -keep class com.google.android.gms.** { *; }
 
+# --- Critical Metadata for Reflection ---
+-keepattributes Signature, *Annotation*, EnclosingMethod, InnerClasses
+-keepattributes SourceFile, LineNumberTable
+
+# --- Handle R8 Full Mode / Constructor Stripping ---
+-keepclassmembers class * {
+    void <init>();
+}
+
+# --- Keep custom exceptions ---
+-keep public class * extends java.lang.Exception
+
 # --- Gemini AI (google_generative_ai) ---
 # Prevent obfuscation of JSON models used by Gemini SDK
 -keep class com.google.ai.client.generativeai.** { *; }
