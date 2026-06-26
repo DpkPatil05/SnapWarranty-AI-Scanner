@@ -27,9 +27,9 @@ class AdService implements IAdService {
   @override
   String get bannerAdUnitId {
     if (Platform.isAndroid) {
-      return AppConstants.androidBannerTestId;
+      return AppConstants.androidBannerId;
     } else if (Platform.isIOS) {
-      return AppConstants.iosBannerTestId;
+      return AppConstants.iosBannerId;
     }
     throw UnsupportedError('Unsupported platform');
   }
@@ -37,9 +37,9 @@ class AdService implements IAdService {
   @override
   String get interstitialAdUnitId {
     if (Platform.isAndroid) {
-      return AppConstants.androidInterstitialTestId;
+      return AppConstants.androidInterstitialId;
     } else if (Platform.isIOS) {
-      return AppConstants.iosInterstitialTestId;
+      return AppConstants.iosInterstitialId;
     }
     throw UnsupportedError('Unsupported platform');
   }
@@ -152,5 +152,34 @@ class AdService implements IAdService {
   @override
   void init() {
     loadInterstitialAd();
+  }
+
+  @override
+  BannerAd createBannerAd({
+    required void Function(Ad) onAdLoaded,
+    required void Function(Ad, LoadAdError) onAdFailedToLoad,
+    String? logLabel,
+  }) {
+    final label = logLabel ?? 'General';
+    dev.log('Loading Banner Ad ($label)...', name: 'AdService');
+
+    return BannerAd(
+      adUnitId: bannerAdUnitId,
+      size: AdSize.banner,
+      request: const AdRequest(),
+      listener: BannerAdListener(
+        onAdLoaded: (ad) {
+          dev.log('Banner Ad Loaded ($label).', name: 'AdService');
+          onAdLoaded(ad);
+        },
+        onAdFailedToLoad: (ad, error) {
+          dev.log(
+            'Banner Ad Failed to Load ($label): $error',
+            name: 'AdService',
+          );
+          onAdFailedToLoad(ad, error);
+        },
+      ),
+    );
   }
 }
