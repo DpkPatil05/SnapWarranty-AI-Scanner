@@ -11,7 +11,7 @@ class GlassSnackBar {
   }) {
     final scaffoldMessenger = ScaffoldMessenger.of(context);
     scaffoldMessenger.hideCurrentSnackBar();
-    
+
     scaffoldMessenger.showSnackBar(
       SnackBar(
         backgroundColor: Colors.transparent,
@@ -23,17 +23,18 @@ class GlassSnackBar {
           borderRadius: 16,
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
           border: Border.all(
-            color: isError 
-                ? Colors.redAccent.withValues(alpha: 0.4) 
+            color: isError
+                ? Colors.redAccent.withValues(alpha: 0.4)
                 : Colors.white.withValues(alpha: 0.2),
             width: 1,
           ),
           child: Row(
             children: [
               Icon(
-                icon, 
-                color: iconColor ?? (isError ? Colors.redAccent : Colors.white70), 
-                size: 20
+                icon,
+                color:
+                    iconColor ?? (isError ? Colors.redAccent : Colors.white70),
+                size: 20,
               ),
               const SizedBox(width: 14),
               Expanded(

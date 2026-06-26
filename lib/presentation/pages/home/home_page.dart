@@ -1,16 +1,17 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'dart:io';
 
 import '../../state/warranty_provider.dart';
-import '../../widgets/glass/glass_container.dart';
 import '../../widgets/glass/glass_snackbar.dart';
 import '../../widgets/glass/liquid_glass_background.dart';
-import '../details/warranty_details_page.dart';
-import '../settings/settings_page.dart';
+import 'widgets/home_app_bar.dart';
+import 'widgets/home_empty_state.dart';
+import 'widgets/warranty_list_view.dart';
+import 'widgets/scanning_overlay.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
@@ -79,13 +80,13 @@ class _HomePageState extends ConsumerState<HomePage> {
           SafeArea(
             child: CustomScrollView(
               slivers: [
-                _buildAppBar(context),
+                const HomeAppBar(),
                 warrantiesAsync.when(
                   data: (warranties) {
                     if (warranties.isEmpty) {
-                      return _buildEmptyState();
+                      return const HomeEmptyState();
                     }
-                    return _buildWarrantyList(context, warranties);
+                    return WarrantyListView(warranties: warranties);
                   },
                   loading: () => const SliverFillRemaining(
                     child: Center(
@@ -95,49 +96,15 @@ class _HomePageState extends ConsumerState<HomePage> {
                   error: (e, _) =>
                       (warrantiesAsync.hasValue &&
                           warrantiesAsync.value!.isNotEmpty)
-                      ? _buildWarrantyList(context, warrantiesAsync.value!)
-                      : _buildEmptyState(),
+                      ? WarrantyListView(warranties: warrantiesAsync.value!)
+                      : const HomeEmptyState(),
                 ),
               ],
             ),
           ),
 
           // Decoupled Global Scan Loader Overlay
-          if (isScanning)
-            Positioned.fill(
-              child: Container(
-                color: Colors.black.withValues(alpha: 0.5),
-                child: Center(
-                  child: GlassContainer(
-                    blur: 20,
-                    opacity: 0.2,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const CircularProgressIndicator(color: Colors.white),
-                        const SizedBox(height: 24),
-                        const Text(
-                          'Analyzing Document',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'AI is reading your data...',
-                          style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.7),
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
+          if (isScanning) const ScanningOverlay(),
         ],
       ),
       floatingActionButton: _buildFloatingActionButton(context),
@@ -150,264 +117,6 @@ class _HomePageState extends ConsumerState<HomePage> {
               ),
             )
           : null,
-    );
-  }
-
-  Widget _buildAppBar(BuildContext context) {
-    return SliverPadding(
-      padding: const EdgeInsets.all(24.0),
-      sliver: SliverToBoxAdapter(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'SnapWarranty',
-                      style: TextStyle(
-                        fontSize: 32,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white.withValues(alpha: 0.9),
-                        letterSpacing: -1,
-                      ),
-                    ),
-                    Text(
-                      'Your digital warranty vault',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.white.withValues(alpha: 0.7),
-                      ),
-                    ),
-                  ],
-                ),
-                IconButton(
-                  icon: const Icon(
-                    Icons.settings_outlined,
-                    color: Colors.white70,
-                  ),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const SettingsPage(),
-                      ),
-                    );
-                  },
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
-            _buildSearchBar(),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSearchBar() {
-    return GlassContainer(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      borderRadius: 16,
-      child: TextField(
-        onChanged: (value) =>
-            ref.read(searchQueryProvider.notifier).update(value),
-        style: const TextStyle(color: Colors.white),
-        decoration: InputDecoration(
-          hintText: 'Search receipts...',
-          hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.5)),
-          border: InputBorder.none,
-          icon: const Icon(Icons.search, color: Colors.white70),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildEmptyState() {
-    final query = ref.watch(searchQueryProvider);
-    final isSearching = query.isNotEmpty;
-
-    return SliverFillRemaining(
-      hasScrollBody: false,
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            GlassContainer(
-              padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 24),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    isSearching ? Icons.search_off : Icons.receipt_long,
-                    size: 48,
-                    color: Colors.white.withValues(alpha: 0.8),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    isSearching ? 'No results found' : 'No warranties yet',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    isSearching
-                        ? 'Try a different search term'
-                        : 'Add a receipt or PDF to get started',
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.6),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildWarrantyList(BuildContext context, List<dynamic> warranties) {
-    return SliverPadding(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
-      sliver: SliverList(
-        delegate: SliverChildBuilderDelegate((context, index) {
-          final item = warranties[index];
-          final isPdf =
-              item.receiptImagePath?.toLowerCase().endsWith('.pdf') ?? false;
-
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 16),
-            child: Dismissible(
-              key: Key(item.id),
-              direction: DismissDirection.endToStart,
-              background: Container(
-                alignment: Alignment.centerRight,
-                padding: const EdgeInsets.only(right: 20.0),
-                decoration: BoxDecoration(
-                  color: Colors.redAccent.withValues(alpha: 0.3),
-                  borderRadius: BorderRadius.circular(24),
-                ),
-                child: const Icon(Icons.delete_sweep, color: Colors.white),
-              ),
-              onDismissed: (direction) {
-                ref.read(warrantyListProvider.notifier).deleteWarranty(item.id);
-                GlassSnackBar.show(
-                  context,
-                  message: '${item.productName} deleted',
-                  icon: Icons.delete_outline,
-                );
-              },
-              child: InkWell(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => WarrantyDetailsPage(item: item),
-                    ),
-                  );
-                },
-                borderRadius: BorderRadius.circular(24),
-                child: GlassContainer(
-                  child: Row(
-                    children: [
-                      if (item.receiptImagePath != null)
-                        Hero(
-                          tag: 'receipt_${item.id}',
-                          child: Container(
-                            width: 60,
-                            height: 60,
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(16),
-                              image: isPdf
-                                  ? null
-                                  : DecorationImage(
-                                      image: FileImage(
-                                        File(item.receiptImagePath!),
-                                      ),
-                                      fit: BoxFit.cover,
-                                    ),
-                            ),
-                            child: isPdf
-                                ? const Icon(
-                                    Icons.picture_as_pdf,
-                                    color: Colors.redAccent,
-                                  )
-                                : null,
-                          ),
-                        )
-                      else
-                        Container(
-                          width: 60,
-                          height: 60,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.2),
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: const Icon(
-                            Icons.inventory_2,
-                            color: Colors.white,
-                          ),
-                        ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              item.productName,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            if (item.expirationDate != null)
-                              Text(
-                                'Expires: ${item.expirationDate.toString().split(' ')[0]}',
-                                style: TextStyle(
-                                  color: Colors.white.withValues(alpha: 0.6),
-                                ),
-                              )
-                            else
-                              Text(
-                                'Expiry not set',
-                                style: TextStyle(
-                                  color: Colors.orangeAccent.withValues(
-                                    alpha: 0.8,
-                                  ),
-                                  fontSize: 12,
-                                  fontStyle: FontStyle.italic,
-                                ),
-                              ),
-                          ],
-                        ),
-                      ),
-                      Icon(
-                        item.expirationDate == null
-                            ? Icons.help_outline
-                            : (item.isExpired ? Icons.warning : Icons.verified),
-                        color: item.expirationDate == null
-                            ? Colors.white54
-                            : (item.isExpired
-                                  ? Colors.orangeAccent
-                                  : Colors.greenAccent),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          );
-        }, childCount: warranties.length),
-      ),
     );
   }
 
@@ -429,9 +138,12 @@ class _HomePageState extends ConsumerState<HomePage> {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (context) => GlassContainer(
-        borderRadius: 32,
+      builder: (context) => Container(
         padding: const EdgeInsets.all(24),
+        decoration: const BoxDecoration(
+          color: Color(0xFF1E1B4B),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -528,7 +240,6 @@ class _HomePageState extends ConsumerState<HomePage> {
   Future<void> _pickPdf(BuildContext context) async {
     Navigator.pop(context);
 
-    // Reverted back to the standard pickFiles() method
     final result = await FilePicker.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['pdf'],
