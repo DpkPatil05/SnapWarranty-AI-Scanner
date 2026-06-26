@@ -24,6 +24,15 @@ class WarrantyRepositoryImpl implements WarrantyRepository {
   @override
   Future<WarrantyItem> extractWarrantyFromImage(File receiptImage) async {
     final jsonMap = await remoteDataSource.extractDataFromReceipt(receiptImage);
+
+    // AI Validation Check
+    final isValid = jsonMap['isReceiptOrWarranty'] as bool? ?? false;
+    if (!isValid) {
+      throw Exception(
+        "This doesn't look like a receipt or warranty document. Please try again with a clear photo of your receipt.",
+      );
+    }
+
     final id = const Uuid().v4();
     return WarrantyItemModel.fromJson(jsonMap, id, receiptImage.path);
   }
