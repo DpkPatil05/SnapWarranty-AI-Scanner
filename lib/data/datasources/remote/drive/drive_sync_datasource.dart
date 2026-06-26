@@ -3,11 +3,12 @@ import 'dart:io';
 import 'package:googleapis/drive/v3.dart' as drive;
 import 'package:extension_google_sign_in_as_googleapis_auth/extension_google_sign_in_as_googleapis_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import '../../../../core/constants/app_constants.dart';
 import 'dart:developer' as dev;
 
 class DriveSyncDataSource {
-  static const String _folderName = 'SnapWarranty_Backups';
-  static const String _metadataFileName = 'sync_metadata.json';
+  static const String _folderName = AppConstants.driveFolderName;
+  static const String _metadataFileName = AppConstants.metadataFileName;
   static const List<String> _driveScopes = [drive.DriveApi.driveFileScope];
 
   // ─── Singleton ────────────────────────────────────────────────────────────
@@ -44,8 +45,7 @@ class DriveSyncDataSource {
     try {
       dev.log('Initializing GoogleSignIn...', name: 'DriveSync');
       await _googleSignIn.initialize(
-        serverClientId:
-            '1077184882408-efj104rtvf4k24od9e447seqlevgsehp.apps.googleusercontent.com',
+        serverClientId: AppConstants.webClientId,
       );
       _initialized = true;
 

@@ -9,6 +9,7 @@ import '../datasources/remote/drive/drive_sync_datasource.dart';
 import '../datasources/remote/gemini_remote_datasource.dart';
 import '../models/warranty_item_model.dart';
 import 'package:path_provider/path_provider.dart';
+import '../../core/error/exceptions.dart';
 
 class WarrantyRepositoryImpl implements WarrantyRepository {
   final GeminiRemoteDataSource remoteDataSource;
@@ -28,9 +29,7 @@ class WarrantyRepositoryImpl implements WarrantyRepository {
     // AI Validation Check
     final isValid = jsonMap['isReceiptOrWarranty'] as bool? ?? false;
     if (!isValid) {
-      throw Exception(
-        "This doesn't look like a receipt or warranty document. Please try again with a clear photo of your receipt.",
-      );
+      throw InvalidDocumentException();
     }
 
     final id = const Uuid().v4();

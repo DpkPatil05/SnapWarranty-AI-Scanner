@@ -5,7 +5,7 @@ import 'package:gal/gal.dart';
 import 'package:collection/collection.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-import '../../../core/ads/ad_service.dart';
+import '../../../domain/services/ad_service_interface.dart';
 import '../../../domain/entities/warranty_item.dart';
 import '../../state/warranty_provider.dart';
 import '../../widgets/glass/glass_container.dart';
@@ -48,7 +48,7 @@ class _WarrantyDetailsPageState extends ConsumerState<WarrantyDetailsPage> {
     super.dispose();
   }
 
-  void _loadBannerAd(AdService adService) {
+  void _loadBannerAd(IAdService adService) {
     _bannerAd = BannerAd(
       adUnitId: adService.bannerAdUnitId,
       size: AdSize.banner,

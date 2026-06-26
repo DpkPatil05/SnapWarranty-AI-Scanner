@@ -3,16 +3,20 @@ import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'dart:developer' as dev;
 import 'package:flutter/services.dart';
+import '../../../domain/services/notification_service_interface.dart';
 
-class NotificationService {
+class NotificationService implements INotificationService {
   static final NotificationService _instance = NotificationService._();
+
   factory NotificationService() => _instance;
+
   NotificationService._();
 
   final FlutterLocalNotificationsPlugin _notifications =
       FlutterLocalNotificationsPlugin();
   bool _isRequestingPermission = false;
 
+  @override
   Future<void> initialize() async {
     tz.initializeTimeZones();
 
@@ -39,6 +43,7 @@ class NotificationService {
     );
   }
 
+  @override
   Future<void> requestPermissions() async {
     if (_isRequestingPermission) return;
     _isRequestingPermission = true;
@@ -56,6 +61,7 @@ class NotificationService {
     }
   }
 
+  @override
   Future<void> scheduleExpiryReminder({
     required String id,
     required String productName,
@@ -83,6 +89,7 @@ class NotificationService {
     }
   }
 
+  @override
   Future<void> cancelReminder(String id) async {
     final int notificationId = id.hashCode.abs();
     await _notifications.cancel(id: notificationId);

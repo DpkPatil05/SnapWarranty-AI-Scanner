@@ -192,11 +192,11 @@ final notificationServiceProvider = NotificationServiceProvider._();
 final class NotificationServiceProvider
     extends
         $FunctionalProvider<
-          NotificationService,
-          NotificationService,
-          NotificationService
+          INotificationService,
+          INotificationService,
+          INotificationService
         >
-    with $Provider<NotificationService> {
+    with $Provider<INotificationService> {
   NotificationServiceProvider._()
     : super(
         from: null,
@@ -213,26 +213,26 @@ final class NotificationServiceProvider
 
   @$internal
   @override
-  $ProviderElement<NotificationService> $createElement(
+  $ProviderElement<INotificationService> $createElement(
     $ProviderPointer pointer,
   ) => $ProviderElement(pointer);
 
   @override
-  NotificationService create(Ref ref) {
+  INotificationService create(Ref ref) {
     return notificationService(ref);
   }
 
   /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(NotificationService value) {
+  Override overrideWithValue(INotificationService value) {
     return $ProviderOverride(
       origin: this,
-      providerOverride: $SyncValueProvider<NotificationService>(value),
+      providerOverride: $SyncValueProvider<INotificationService>(value),
     );
   }
 }
 
 String _$notificationServiceHash() =>
-    r'cda5ea9d196dce85bee56839a4a0f035021752e3';
+    r'a563ac7a2dabdafe230a535c99627dcd98c2f48b';
 
 @ProviderFor(warrantyRepository)
 final warrantyRepositoryProvider = WarrantyRepositoryProvider._();
