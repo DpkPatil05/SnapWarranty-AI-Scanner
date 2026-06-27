@@ -21,4 +21,6 @@ class AppConstants {
   // Google Sign-In
   static const String webClientId =
       '1077184882408-efj104rtvf4k24od9e447seqlevgsehp.apps.googleusercontent.com';
+  static const String androidClientId =
+      '1077184882408-kr4b93q3jmual5j1ae7rnh3f3o86e1oe.apps.googleusercontent.com';
 }

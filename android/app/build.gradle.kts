@@ -64,6 +64,10 @@ android {
         implementation(platform("com.google.firebase:firebase-bom:34.15.0"))
         // Add the dependencies for Firebase products you want to use
         implementation("com.google.firebase:firebase-analytics")
+
+        // Critical for Google Sign-In v7.0+ on Android 14+
+        implementation("androidx.credentials:credentials:1.5.0-beta01")
+        implementation("androidx.credentials:credentials-play-services-auth:1.5.0-beta01")
     }
 
 
