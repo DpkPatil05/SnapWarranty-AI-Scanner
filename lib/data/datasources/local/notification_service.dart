@@ -21,7 +21,7 @@ class NotificationService implements INotificationService {
     tz.initializeTimeZones();
 
     const androidSettings = AndroidInitializationSettings(
-      '@mipmap/ic_launcher',
+      '@mipmap/launcher_icon',
     );
     const iosSettings = DarwinInitializationSettings(
       requestAlertPermission: true,

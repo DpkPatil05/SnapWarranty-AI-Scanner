@@ -3,7 +3,7 @@ description: "A cross-platform Flutter application architected using strict Clea
 
 publish_to: 'none'
 
-version: 1.0.0+3
+version: 1.0.0+4
 
 environment:
   sdk: ^3.12.1
@@ -58,6 +58,7 @@ dependencies:
   googleapis_auth: ^2.3.2
   flutter_local_notifications: ^22.0.1
   timezone: ^0.11.0
+  flutter_native_splash: ^2.4.8
 
 dev_dependencies:
   flutter_test:
@@ -73,7 +74,6 @@ dev_dependencies:
 
   # --- Asset Generation ---
   flutter_launcher_icons: ^0.14.4
-  flutter_native_splash: ^2.4.8
 
 flutter:
   uses-material-design: true
