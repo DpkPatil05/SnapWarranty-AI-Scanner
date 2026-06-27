@@ -4,13 +4,17 @@ import 'core/initialization/app_initializers.dart';
 import 'presentation/app.dart';
 
 /// The Entry Point of the application.
-///
-/// Following the modular architecture refactor, all heavy setup logic
-/// (Firebase, Drive Auth, .env, Notifications) has been moved
-/// to [AppInitializers] in the core layer.
 void main() async {
-  // Execute the boot sequence
-  await AppInitializers.init();
+  try {
+    // 1. Ensure Flutter bindings are ready
+    WidgetsFlutterBinding.ensureInitialized();
+
+    // 2. Execute the boot sequence
+    await AppInitializers.init();
+  } catch (e, st) {
+    debugPrint('FATAL INITIALIZATION ERROR: $e');
+    debugPrint(st.toString());
+  }
 
   // Launch the App within a ProviderScope for Riverpod 3.x state management
   runApp(const ProviderScope(child: SnapWarrantyApp()));

@@ -1,8 +1,8 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 import '../ads/ad_service.dart';
 import '../config/remote_config_service.dart';
 import '../../firebase_options.dart';
@@ -12,30 +12,26 @@ import 'dart:developer' as dev;
 
 class AppInitializers {
   /// Entry point for all core service initializations.
-  /// This ensures main.dart remains clean and focused only on the widget tree.
   static Future<void> init() async {
     try {
       dev.log('Starting boot sequence...', name: 'AppInitializers');
 
-      // 1. Ensure Flutter bindings are ready
-      WidgetsFlutterBinding.ensureInitialized();
-
-      // 2. Load Environment Variables (.env)
+      // 1. Load Environment Variables (.env)
       await _initDotEnv();
 
-      // 3. Initialize Firebase & App Check
+      // 2. Initialize Firebase & App Check
       await _initFirebase();
 
-      // 4. Restore Drive Session (Persistent Auth)
+      // 3. Restore Drive Session (Persistent Auth)
       await _initDriveAuth();
 
-      // 5. Initialize Local Notification System
+      // 4. Initialize Local Notification System
       await _initNotifications();
 
-      // 6. Initialize Mobile Ads
+      // 5. Initialize Mobile Ads
       await _initMobileAds();
 
-      // 7. Initialize Remote Config
+      // 6. Initialize Remote Config
       await _initRemoteConfig();
 
       dev.log('Boot sequence complete!', name: 'AppInitializers');
@@ -47,6 +43,9 @@ class AppInitializers {
         stackTrace: st,
       );
       rethrow;
+    } finally {
+      // Ensure splash is always removed, even on error
+      FlutterNativeSplash.remove();
     }
   }
 
@@ -63,15 +62,13 @@ class AppInitializers {
 
     dev.log('Activating App Check...', name: 'AppInitializers');
     await FirebaseAppCheck.instance.activate(
-      // NOTE: Change to AndroidPlayIntegrityProvider() before publishing to Play Store
-      providerAndroid: AndroidDebugProvider(),
+      providerAndroid: AndroidPlayIntegrityProvider(),
       providerApple: AppleAppAttestProvider(),
     );
   }
 
   static Future<void> _initDriveAuth() async {
     dev.log('Restoring Drive session...', name: 'AppInitializers');
-    // Using instance.silentSignIn() to match the optimized persistence logic
     await DriveSyncDataSource.instance.restoreSession();
   }
 
