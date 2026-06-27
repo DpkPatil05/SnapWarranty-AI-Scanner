@@ -10,7 +10,7 @@ void main() async {
     WidgetsFlutterBinding.ensureInitialized();
 
     // 2. Execute the boot sequence
-    await AppInitializers.init();
+    AppInitializers.init();
   } catch (e, st) {
     debugPrint('FATAL INITIALIZATION ERROR: $e');
     debugPrint(st.toString());
