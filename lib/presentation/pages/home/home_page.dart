@@ -1,9 +1,10 @@
 import 'dart:io';
+
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:file_picker/file_picker.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../../core/services/update_manager.dart';
 import '../../state/warranty_provider.dart';
@@ -11,8 +12,8 @@ import '../../widgets/glass/glass_snackbar.dart';
 import '../../widgets/glass/liquid_glass_background.dart';
 import 'widgets/home_app_bar.dart';
 import 'widgets/home_empty_state.dart';
-import 'widgets/warranty_list_view.dart';
 import 'widgets/scanning_overlay.dart';
+import 'widgets/warranty_list_view.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
@@ -58,6 +59,14 @@ class _HomePageState extends ConsumerState<HomePage> {
   Widget build(BuildContext context) {
     final warrantiesAsync = ref.watch(filteredWarrantiesProvider);
     final isScanning = ref.watch(documentScanningProvider);
+
+    // Listen for search query to log it (debounced logic should be handled by caller usually,
+    // but we can at least log when it's not empty and changes significant)
+    ref.listen(searchQueryProvider, (previous, next) {
+      if (next.length > 2 && next != previous) {
+        ref.read(analyticsServiceProvider).logSearchPerformed(next);
+      }
+    });
 
     // Listen for scanning errors to show SnackBar
     ref.listen(warrantyListProvider, (previous, next) {
