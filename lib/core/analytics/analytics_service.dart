@@ -1,15 +1,17 @@
 import 'package:firebase_analytics/firebase_analytics.dart';
 
 import '../../domain/analytics/analytics_service_interface.dart';
+import '../initialization/app_initializers.dart';
 
 class AnalyticsService implements IAnalyticsService {
   AnalyticsService._internal();
 
   static final AnalyticsService instance = AnalyticsService._internal();
 
-  final FirebaseAnalytics _analytics = FirebaseAnalytics.instance;
+  FirebaseAnalytics get _analytics => FirebaseAnalytics.instance;
 
   Future<void> logEvent(String name, {Map<String, Object>? parameters}) async {
+    await AppInitializers.isReady;
     await _analytics.logEvent(name: name, parameters: parameters);
   }
 

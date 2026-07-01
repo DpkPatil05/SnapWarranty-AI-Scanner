@@ -1,15 +1,19 @@
-import 'package:firebase_remote_config/firebase_remote_config.dart';
-import '../constants/app_constants.dart';
 import 'dart:developer' as dev;
+
+import 'package:firebase_remote_config/firebase_remote_config.dart';
+
+import '../constants/app_constants.dart';
+import '../initialization/app_initializers.dart';
 
 class RemoteConfigService {
   RemoteConfigService._internal();
 
   static final RemoteConfigService instance = RemoteConfigService._internal();
 
-  final FirebaseRemoteConfig _remoteConfig = FirebaseRemoteConfig.instance;
+  FirebaseRemoteConfig get _remoteConfig => FirebaseRemoteConfig.instance;
 
   Future<void> init() async {
+    await AppInitializers.isReady;
     try {
       await _remoteConfig.setDefaults({
         AppConstants.keyAdFrequency: 3,
