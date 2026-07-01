@@ -65,7 +65,7 @@ class _HomePageState extends ConsumerState<HomePage> {
         error: (error, stackTrace) {
           GlassSnackBar.show(
             context,
-            message: 'Error: \$error',
+            message: 'Error: $error',
             icon: Icons.error_outline,
             isError: true,
           );

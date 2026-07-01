@@ -25,7 +25,7 @@ class RemoteConfigService {
       );
       await _remoteConfig.fetchAndActivate();
     } catch (e) {
-      dev.log('Remote Config init failed: \$e', name: 'RemoteConfigService');
+      dev.log('Remote Config init failed: $e', name: 'RemoteConfigService');
     }
   }
 
