@@ -27,7 +27,7 @@ class UpdateManager {
         }
       }
     } catch (e) {
-      debugPrint("Update check failed: \$e");
+      debugPrint("Update check failed: $e");
     }
   }
 }
