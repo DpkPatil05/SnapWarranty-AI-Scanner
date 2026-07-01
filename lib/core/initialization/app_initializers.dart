@@ -1,4 +1,3 @@
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
@@ -16,22 +15,19 @@ class AppInitializers {
     try {
       dev.log('Starting boot sequence...', name: 'AppInitializers');
 
-      // 1. Load Environment Variables (.env)
-      await _initDotEnv();
-
-      // 2. Initialize Firebase & App Check
+      // 1. Initialize Firebase & App Check
       await _initFirebase();
 
-      // 3. Restore Drive Session (Persistent Auth)
+      // 2. Restore Drive Session (Persistent Auth)
       await _initDriveAuth();
 
-      // 4. Initialize Local Notification System
+      // 3. Initialize Local Notification System
       await _initNotifications();
 
-      // 5. Initialize Mobile Ads
+      // 4. Initialize Mobile Ads
       await _initMobileAds();
 
-      // 6. Initialize Remote Config
+      // 5. Initialize Remote Config
       await _initRemoteConfig();
 
       dev.log('Boot sequence complete!', name: 'AppInitializers');
@@ -47,11 +43,6 @@ class AppInitializers {
       // Ensure splash is always removed, even on error
       FlutterNativeSplash.remove();
     }
-  }
-
-  static Future<void> _initDotEnv() async {
-    dev.log('Loading .env file...', name: 'AppInitializers');
-    await dotenv.load(fileName: ".env");
   }
 
   static Future<void> _initFirebase() async {

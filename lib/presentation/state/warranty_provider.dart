@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'dart:developer' as dev;
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../domain/entities/warranty_item.dart';
@@ -31,9 +30,9 @@ AppDatabase database(Ref ref) {
 // --- 2. Data Sources ---
 @riverpod
 GeminiRemoteDataSource geminiDataSource(Ref ref) {
-  final apiKey = dotenv.env['GEMINI_API_KEY'];
-  if (apiKey == null) {
-    throw Exception('GEMINI_API_KEY not found in .env file');
+  final apiKey = RemoteConfigService.instance.geminiApiKey;
+  if (apiKey.isEmpty) {
+    throw Exception('GEMINI_API_KEY not found in Remote Config');
   }
   return GeminiRemoteDataSource(apiKey: apiKey);
 }
