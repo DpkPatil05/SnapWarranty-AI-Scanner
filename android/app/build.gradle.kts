@@ -28,7 +28,8 @@ android {
         create("release") {
             keyAlias = keyProperties.getProperty("keyAlias")
             keyPassword = keyProperties.getProperty("keyPassword")
-            storeFile = file(keyProperties.getProperty("storeFile"))
+            val storeFilePath = keyProperties.getProperty("storeFile")
+            storeFile = if (storeFilePath != null) file(storeFilePath) else null
             storePassword = keyProperties.getProperty("storePassword")
         }
     }
@@ -64,6 +65,7 @@ android {
         implementation(platform("com.google.firebase:firebase-bom:34.15.0"))
         // Add the dependencies for Firebase products you want to use
         implementation("com.google.firebase:firebase-analytics")
+        implementation("com.google.firebase:firebase-config") // For Force Update
 
         // Critical for Google Sign-In v7.0+ on Android 14+
         implementation("androidx.credentials:credentials:1.5.0-beta01")
@@ -73,7 +75,11 @@ android {
 
     buildTypes {
         release {
-            signingConfig = signingConfigs.getByName("release")
+            signingConfig = if (keyProperties.containsKey("keyAlias")) {
+                signingConfigs.getByName("release")
+            } else {
+                signingConfigs.getByName("debug")
+            }
 
             // Enable R8 code minification and resource shrinking for production
             isMinifyEnabled = true
