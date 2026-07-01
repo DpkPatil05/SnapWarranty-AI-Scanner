@@ -1,18 +1,22 @@
 import 'package:firebase_remote_config/firebase_remote_config.dart';
+import '../constants/app_constants.dart';
 import 'dart:developer' as dev;
 
 class RemoteConfigService {
   RemoteConfigService._internal();
+
   static final RemoteConfigService instance = RemoteConfigService._internal();
 
   final FirebaseRemoteConfig _remoteConfig = FirebaseRemoteConfig.instance;
 
-  static const String keyAdFrequency = 'interstitial_ad_frequency';
-  static const String keyGeminiApiKey = 'gemini_api_key';
-
   Future<void> init() async {
     try {
-      await _remoteConfig.setDefaults({keyAdFrequency: 3, keyGeminiApiKey: ''});
+      await _remoteConfig.setDefaults({
+        AppConstants.keyAdFrequency: 3,
+        AppConstants.keyGeminiApiKey: '',
+        AppConstants.keyForceUpdate: false,
+      });
+
       await _remoteConfig.setConfigSettings(
         RemoteConfigSettings(
           fetchTimeout: const Duration(minutes: 1),
@@ -21,11 +25,16 @@ class RemoteConfigService {
       );
       await _remoteConfig.fetchAndActivate();
     } catch (e) {
-      dev.log('Remote Config init failed: $e', name: 'RemoteConfigService');
+      dev.log('Remote Config init failed: \$e', name: 'RemoteConfigService');
     }
   }
 
-  int get interstitialAdFrequency => _remoteConfig.getInt(keyAdFrequency);
+  int get interstitialAdFrequency =>
+      _remoteConfig.getInt(AppConstants.keyAdFrequency);
 
-  String get geminiApiKey => _remoteConfig.getString(keyGeminiApiKey);
+  String get geminiApiKey =>
+      _remoteConfig.getString(AppConstants.keyGeminiApiKey);
+
+  bool get isForceUpdateEnabled =>
+      _remoteConfig.getBool(AppConstants.keyForceUpdate);
 }
