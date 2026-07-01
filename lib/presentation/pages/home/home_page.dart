@@ -5,6 +5,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
+import '../../../core/services/update_manager.dart';
 import '../../state/warranty_provider.dart';
 import '../../widgets/glass/glass_snackbar.dart';
 import '../../widgets/glass/liquid_glass_background.dart';
@@ -28,6 +29,7 @@ class _HomePageState extends ConsumerState<HomePage> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      UpdateManager.evaluateAndPromptUpdate();
       _initBannerAd();
     });
   }
@@ -63,7 +65,7 @@ class _HomePageState extends ConsumerState<HomePage> {
         error: (error, stackTrace) {
           GlassSnackBar.show(
             context,
-            message: 'Error: $error',
+            message: 'Error: \$error',
             icon: Icons.error_outline,
             isError: true,
           );
