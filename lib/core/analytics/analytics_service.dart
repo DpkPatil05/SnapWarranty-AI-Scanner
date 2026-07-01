@@ -1,4 +1,5 @@
 import 'package:firebase_analytics/firebase_analytics.dart';
+
 import '../../domain/analytics/analytics_service_interface.dart';
 
 class AnalyticsService implements IAnalyticsService {
@@ -44,6 +45,60 @@ class AnalyticsService implements IAnalyticsService {
   Future<void> logWarrantyViewed(String id, String name) async {
     await logEvent(
       'view_warranty',
+      parameters: {'warranty_id': id, 'product_name': name},
+    );
+  }
+
+  @override
+  Future<void> logWarrantyDeleted(String id, String name) async {
+    await logEvent(
+      'delete_warranty',
+      parameters: {'warranty_id': id, 'product_name': name},
+    );
+  }
+
+  @override
+  Future<void> logWarrantyUpdated(String id, String name) async {
+    await logEvent(
+      'update_warranty',
+      parameters: {'warranty_id': id, 'product_name': name},
+    );
+  }
+
+  @override
+  Future<void> logSearchPerformed(String query) async {
+    if (query.isEmpty) return;
+    await logEvent('search_performed', parameters: {'search_query': query});
+  }
+
+  @override
+  Future<void> logNotificationScheduled(String id, String name) async {
+    await logEvent(
+      'notification_scheduled',
+      parameters: {'warranty_id': id, 'product_name': name},
+    );
+  }
+
+  @override
+  Future<void> logAppUpdatePrompted(String version) async {
+    await logEvent(
+      'app_update_prompted',
+      parameters: {'target_version': version},
+    );
+  }
+
+  @override
+  Future<void> logError(String message, String source) async {
+    await logEvent(
+      'app_error',
+      parameters: {'error_message': message, 'error_source': source},
+    );
+  }
+
+  @override
+  Future<void> logImageExported(String id, String name) async {
+    await logEvent(
+      'image_exported',
       parameters: {'warranty_id': id, 'product_name': name},
     );
   }

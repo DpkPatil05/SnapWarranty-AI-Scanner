@@ -1,12 +1,14 @@
 import 'dart:io';
+
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gal/gal.dart';
-import 'package:collection/collection.dart';
-import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-import '../../../domain/services/ad_service_interface.dart';
+import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
+
 import '../../../domain/entities/warranty_item.dart';
+import '../../../domain/services/ad_service_interface.dart';
 import '../../state/warranty_provider.dart';
 import '../../widgets/glass/glass_container.dart';
 import '../../widgets/glass/glass_detail_row.dart';
@@ -484,6 +486,7 @@ class _WarrantyDetailsPageState extends ConsumerState<WarrantyDetailsPage> {
   Future<void> _downloadReceipt(BuildContext context, WarrantyItem item) async {
     if (item.receiptImagePath == null) return;
     final isPdf = item.receiptImagePath!.toLowerCase().endsWith('.pdf');
+    final analytics = ref.read(analyticsServiceProvider);
 
     try {
       if (!isPdf) {
@@ -492,6 +495,7 @@ class _WarrantyDetailsPageState extends ConsumerState<WarrantyDetailsPage> {
           await Gal.requestAccess();
         }
         await Gal.putImage(item.receiptImagePath!);
+        await analytics.logImageExported(item.id, item.productName);
         if (context.mounted) {
           GlassSnackBar.show(
             context,
@@ -501,14 +505,18 @@ class _WarrantyDetailsPageState extends ConsumerState<WarrantyDetailsPage> {
           );
         }
       } else {
-        GlassSnackBar.show(
-          context,
-          message: 'PDF document is ready in your vault',
-          icon: Icons.picture_as_pdf,
-          iconColor: Colors.blueAccent,
-        );
+        await analytics.logImageExported(item.id, item.productName);
+        if (context.mounted) {
+          GlassSnackBar.show(
+            context,
+            message: 'PDF document is ready in your vault',
+            icon: Icons.picture_as_pdf,
+            iconColor: Colors.blueAccent,
+          );
+        }
       }
     } catch (e) {
+      await analytics.logError(e.toString(), 'downloadReceipt');
       if (context.mounted) {
         GlassSnackBar.show(
           context,

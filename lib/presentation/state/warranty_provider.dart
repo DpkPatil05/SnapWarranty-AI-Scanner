@@ -87,6 +87,7 @@ class WarrantyList extends _$WarrantyList {
 
   Future<void> scanAndAddWarranty(File image) async {
     dev.log('Starting scanAndAddWarranty', name: 'WarrantyList');
+    final analytics = ref.read(analyticsServiceProvider);
     try {
       final repository = ref.read(warrantyRepositoryProvider);
       dev.log('Extracting warranty from image...', name: 'WarrantyList');
@@ -109,6 +110,10 @@ class WarrantyList extends _$WarrantyList {
               productName: newItem.productName,
               expirationDate: newItem.expirationDate!,
             );
+        await analytics.logNotificationScheduled(
+          newItem.id,
+          newItem.productName,
+        );
       }
 
       ref.invalidateSelf();
@@ -119,6 +124,7 @@ class WarrantyList extends _$WarrantyList {
         error: e,
         stackTrace: st,
       );
+      await analytics.logError(e.toString(), 'scanAndAddWarranty');
       // We only set the error state if the extraction actually fails
       state = AsyncValue.error(e, st);
     }
@@ -126,12 +132,21 @@ class WarrantyList extends _$WarrantyList {
 
   Future<void> deleteWarranty(String id) async {
     dev.log('Deleting warranty: $id', name: 'WarrantyList');
+    final analytics = ref.read(analyticsServiceProvider);
     try {
       final repository = ref.read(warrantyRepositoryProvider);
+      // Get name for logging before deletion if possible
+      final warranties = state.value ?? [];
+      final item = warranties.where((i) => i.id == id).firstOrNull;
+
       await repository.deleteWarranty(id);
 
       // Cancel Notification
       await ref.read(notificationServiceProvider).cancelReminder(id);
+
+      if (item != null) {
+        await analytics.logWarrantyDeleted(id, item.productName);
+      }
 
       dev.log('Delete success', name: 'WarrantyList');
       ref.invalidateSelf();
@@ -142,12 +157,14 @@ class WarrantyList extends _$WarrantyList {
         error: e,
         stackTrace: st,
       );
+      await analytics.logError(e.toString(), 'deleteWarranty');
       state = AsyncValue.error(e, st);
     }
   }
 
   Future<void> updateWarranty(WarrantyItem item) async {
     dev.log('Updating warranty: ${item.id}', name: 'WarrantyList');
+    final analytics = ref.read(analyticsServiceProvider);
     try {
       final repository = ref.read(warrantyRepositoryProvider);
       await repository.updateWarranty(item);
@@ -161,9 +178,12 @@ class WarrantyList extends _$WarrantyList {
               productName: item.productName,
               expirationDate: item.expirationDate!,
             );
+        await analytics.logNotificationScheduled(item.id, item.productName);
       } else {
         await ref.read(notificationServiceProvider).cancelReminder(item.id);
       }
+
+      await analytics.logWarrantyUpdated(item.id, item.productName);
 
       dev.log('Update success', name: 'WarrantyList');
       ref.invalidateSelf();
@@ -174,22 +194,26 @@ class WarrantyList extends _$WarrantyList {
         error: e,
         stackTrace: st,
       );
+      await analytics.logError(e.toString(), 'updateWarranty');
       state = AsyncValue.error(e, st);
     }
   }
 
   Future<void> syncToDrive() async {
+    final analytics = ref.read(analyticsServiceProvider);
     try {
       final repository = ref.read(warrantyRepositoryProvider);
       await repository.syncToDrive();
     } catch (e, st) {
       dev.log('Sync Error', error: e, stackTrace: st);
+      await analytics.logError(e.toString(), 'syncToDrive');
       rethrow;
     }
   }
 
   Future<void> restoreFromDrive() async {
     state = const AsyncValue.loading();
+    final analytics = ref.read(analyticsServiceProvider);
     try {
       final repository = ref.read(warrantyRepositoryProvider);
       await repository.restoreFromDrive();
@@ -211,6 +235,7 @@ class WarrantyList extends _$WarrantyList {
       ref.invalidateSelf();
     } catch (e, st) {
       dev.log('Restore Error', error: e, stackTrace: st);
+      await analytics.logError(e.toString(), 'restoreFromDrive');
       state = AsyncValue.error(e, st);
     }
   }

@@ -1,11 +1,14 @@
+import 'dart:developer' as dev;
 import 'dart:io';
+
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:in_app_review/in_app_review.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../domain/services/ad_service_interface.dart';
+import '../analytics/analytics_service.dart';
 import '../config/remote_config_service.dart';
 import '../constants/app_constants.dart';
-import '../../domain/services/ad_service_interface.dart';
-import 'dart:developer' as dev;
 
 enum AdTriggerType { fileAddition, detailView }
 
@@ -112,6 +115,10 @@ class AdService implements IAdService {
         },
         onAdFailedToLoad: (error) {
           dev.log('Interstitial Ad Failed to Load: $error', name: 'AdService');
+          AnalyticsService.instance.logError(
+            error.toString(),
+            'loadInterstitialAd',
+          );
           _interstitialAd = null;
           _isInterstitialAdLoading = false;
         },
@@ -121,6 +128,9 @@ class AdService implements IAdService {
 
   void _setInterstitialCallbacks(InterstitialAd ad) {
     ad.fullScreenContentCallback = FullScreenContentCallback(
+      onAdShowedFullScreenContent: (ad) {
+        AnalyticsService.instance.logAdImpression('interstitial');
+      },
       onAdDismissedFullScreenContent: (ad) {
         dev.log('Interstitial Ad Dismissed.', name: 'AdService');
         ad.dispose();
@@ -129,6 +139,10 @@ class AdService implements IAdService {
       },
       onAdFailedToShowFullScreenContent: (ad, error) {
         dev.log('Interstitial Ad Failed to Show: $error', name: 'AdService');
+        AnalyticsService.instance.logError(
+          error.toString(),
+          'showInterstitialAd',
+        );
         ad.dispose();
         _interstitialAd = null;
         loadInterstitialAd(); // Try again
@@ -170,12 +184,17 @@ class AdService implements IAdService {
       listener: BannerAdListener(
         onAdLoaded: (ad) {
           dev.log('Banner Ad Loaded ($label).', name: 'AdService');
+          AnalyticsService.instance.logAdImpression('banner_$label');
           onAdLoaded(ad);
         },
         onAdFailedToLoad: (ad, error) {
           dev.log(
             'Banner Ad Failed to Load ($label): $error',
             name: 'AdService',
+          );
+          AnalyticsService.instance.logError(
+            error.toString(),
+            'loadBannerAd_$label',
           );
           onAdFailedToLoad(ad, error);
         },

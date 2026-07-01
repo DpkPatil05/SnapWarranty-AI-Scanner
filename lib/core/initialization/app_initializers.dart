@@ -1,15 +1,23 @@
-import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_app_check/firebase_app_check.dart';
-import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'package:flutter_native_splash/flutter_native_splash.dart';
-import '../ads/ad_service.dart';
-import '../config/remote_config_service.dart';
-import '../../firebase_options.dart';
-import '../../data/datasources/local/notification_service.dart';
-import '../../data/datasources/remote/drive/drive_sync_datasource.dart';
+import 'dart:async';
 import 'dart:developer' as dev;
 
+import 'package:firebase_app_check/firebase_app_check.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
+
+import '../../data/datasources/local/notification_service.dart';
+import '../../data/datasources/remote/drive/drive_sync_datasource.dart';
+import '../../firebase_options.dart';
+import '../ads/ad_service.dart';
+import '../config/remote_config_service.dart';
+
 class AppInitializers {
+  static final Completer<void> _initCompleter = Completer<void>();
+
+  /// Future that completes when core Firebase services are ready.
+  static Future<void> get isReady => _initCompleter.future;
+
   /// Entry point for all core service initializations.
   static Future<void> init() async {
     try {
@@ -17,6 +25,11 @@ class AppInitializers {
 
       // 1. Initialize Firebase & App Check
       await _initFirebase();
+
+      // Notify dependent services that Firebase is ready
+      if (!_initCompleter.isCompleted) {
+        _initCompleter.complete();
+      }
 
       // 2. Restore Drive Session (Persistent Auth)
       await _initDriveAuth();
