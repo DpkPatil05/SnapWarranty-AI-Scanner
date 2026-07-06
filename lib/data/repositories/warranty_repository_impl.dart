@@ -1,6 +1,10 @@
 import 'dart:io';
+
 import 'package:drift/drift.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
+
+import '../../core/error/exceptions.dart';
 import '../../domain/entities/warranty_item.dart';
 import '../../domain/repositories/warranty_repository.dart';
 import '../datasources/local/dao/warranty_dao.dart';
@@ -8,8 +12,6 @@ import '../datasources/local/database/app_database.dart';
 import '../datasources/remote/drive/drive_sync_datasource.dart';
 import '../datasources/remote/gemini_remote_datasource.dart';
 import '../models/warranty_item_model.dart';
-import 'package:path_provider/path_provider.dart';
-import '../../core/error/exceptions.dart';
 
 class WarrantyRepositoryImpl implements WarrantyRepository {
   final GeminiRemoteDataSource? remoteDataSource;
@@ -29,7 +31,8 @@ class WarrantyRepositoryImpl implements WarrantyRepository {
         'AI Service is not configured. Please ensure GEMINI_API_KEY is set in Remote Config.',
       );
     }
-    final jsonMap = await remoteDataSource!.extractDataFromReceipt(receiptImage);
+    final jsonMap = await remoteDataSource!.extractDataFromReceipt(
+        receiptImage);
 
     // AI Validation Check
     final isValid = jsonMap['isReceiptOrWarranty'] as bool? ?? false;
