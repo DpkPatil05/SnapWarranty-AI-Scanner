@@ -12,6 +12,9 @@ class AppLocalizationsHi extends AppLocalizations {
   String get appTitle => 'स्नैपवॉरंटी';
 
   @override
+  String get appSubtitle => 'आपका डिजिटल वारंटी वॉल्ट';
+
+  @override
   String get addDocument => 'दस्तावेज़ जोड़ें';
 
   @override

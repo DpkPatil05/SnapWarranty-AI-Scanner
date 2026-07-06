@@ -106,6 +106,12 @@ abstract class AppLocalizations {
   /// **'SnapWarranty'**
   String get appTitle;
 
+  /// No description provided for @appSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your digital warranty vault'**
+  String get appSubtitle;
+
   /// No description provided for @addDocument.
   ///
   /// In en, this message translates to:

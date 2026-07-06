@@ -12,6 +12,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get appTitle => 'SnapWarranty';
 
   @override
+  String get appSubtitle => 'Your digital warranty vault';
+
+  @override
   String get addDocument => 'Add Document';
 
   @override
