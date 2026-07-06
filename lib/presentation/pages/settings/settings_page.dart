@@ -3,10 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:snap_warranty/l10n/app_localizations.dart';
 import '../../widgets/glass/glass_container.dart';
 import '../../widgets/glass/glass_snackbar.dart';
 import '../../widgets/glass/liquid_glass_background.dart';
 import '../../state/warranty_provider.dart';
+import '../../state/locale_provider.dart';
 
 class SettingsPage extends ConsumerStatefulWidget {
   const SettingsPage({super.key});
@@ -37,6 +39,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
@@ -46,9 +49,9 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
           icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          'Vault Settings',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        title: Text(
+          l10n.vaultSettings,
+          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
       ),
       body: Stack(
@@ -58,17 +61,21 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
             child: ListView(
               padding: const EdgeInsets.all(24),
               children: [
-                _buildSyncCard(),
+                _buildSyncCard(l10n),
                 const SizedBox(height: 24),
-                _buildRestoreCard(),
+                _buildRestoreCard(l10n),
                 const SizedBox(height: 24),
-                _buildNotificationCard(),
+                _buildLanguageCard(l10n),
                 const SizedBox(height: 24),
-                _buildInfoCard(),
+                _buildNotificationCard(l10n),
+                const SizedBox(height: 24),
+                _buildRateAppCard(l10n),
+                const SizedBox(height: 24),
+                _buildInfoCard(l10n),
                 const SizedBox(height: 24),
                 Center(
                   child: Text(
-                    'Version $_version',
+                    l10n.version(_version),
                     style: TextStyle(
                       color: Colors.white.withValues(alpha: 0.3),
                       fontSize: 12,
@@ -83,18 +90,18 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     );
   }
 
-  Widget _buildSyncCard() {
+  Widget _buildSyncCard(AppLocalizations l10n) {
     return GlassContainer(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          Row(
             children: [
-              Icon(Icons.cloud_upload, color: Colors.blueAccent, size: 28),
-              SizedBox(width: 12),
+              const Icon(Icons.cloud_upload, color: Colors.blueAccent, size: 28),
+              const SizedBox(width: 12),
               Text(
-                'Cloud Backup',
-                style: TextStyle(
+                l10n.cloudBackup,
+                style: const TextStyle(
                   color: Colors.white,
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -103,15 +110,15 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
             ],
           ),
           const SizedBox(height: 12),
-          const Text(
-            'Upload your receipts to Google Drive. This keeps your vault safe if you lose your phone.',
-            style: TextStyle(color: Colors.white70, fontSize: 14),
+          Text(
+            l10n.backupDescription,
+            style: const TextStyle(color: Colors.white70, fontSize: 14),
           ),
           const SizedBox(height: 24),
           SizedBox(
             width: double.infinity,
             child: ElevatedButton.icon(
-              onPressed: _isBackingUp ? null : _handleSync,
+              onPressed: _isBackingUp ? null : () => _handleSync(l10n),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.white.withValues(alpha: 0.1),
                 foregroundColor: Colors.white,
@@ -131,7 +138,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                       ),
                     )
                   : const FaIcon(FontAwesomeIcons.google, size: 18),
-              label: Text(_isBackingUp ? 'Backing up...' : 'Backup to Drive'),
+              label: Text(_isBackingUp ? l10n.backingUp : l10n.backupToDrive),
             ),
           ),
         ],
@@ -139,18 +146,18 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     );
   }
 
-  Widget _buildRestoreCard() {
+  Widget _buildRestoreCard(AppLocalizations l10n) {
     return GlassContainer(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          Row(
             children: [
-              Icon(Icons.cloud_download, color: Colors.greenAccent, size: 28),
-              SizedBox(width: 12),
+              const Icon(Icons.cloud_download, color: Colors.greenAccent, size: 28),
+              const SizedBox(width: 12),
               Text(
-                'Restore Vault',
-                style: TextStyle(
+                l10n.restoreVault,
+                style: const TextStyle(
                   color: Colors.white,
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -159,15 +166,15 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
             ],
           ),
           const SizedBox(height: 12),
-          const Text(
-            'Recover your warranties and images from a previous backup on Google Drive.',
-            style: TextStyle(color: Colors.white70, fontSize: 14),
+          Text(
+            l10n.restoreDescription,
+            style: const TextStyle(color: Colors.white70, fontSize: 14),
           ),
           const SizedBox(height: 24),
           SizedBox(
             width: double.infinity,
             child: ElevatedButton.icon(
-              onPressed: _isRestoring ? null : _handleRestore,
+              onPressed: _isRestoring ? null : () => _handleRestore(l10n),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.white.withValues(alpha: 0.1),
                 foregroundColor: Colors.white,
@@ -187,7 +194,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                       ),
                     )
                   : const Icon(Icons.settings_backup_restore),
-              label: Text(_isRestoring ? 'Restoring...' : 'Restore from Drive'),
+              label: Text(_isRestoring ? l10n.restoring : l10n.restoreFromDrive),
             ),
           ),
         ],
@@ -195,7 +202,48 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     );
   }
 
-  Widget _buildNotificationCard() {
+  Widget _buildLanguageCard(AppLocalizations l10n) {
+    final currentLocale = ref.watch(localeStateProvider);
+    return GlassContainer(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.language, color: Colors.cyanAccent, size: 28),
+              const SizedBox(width: 12),
+              Text(
+                l10n.language,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          _buildLanguageOption(l10n.systemDefault, null, currentLocale == null),
+          _buildLanguageOption(l10n.english, 'en', currentLocale?.languageCode == 'en'),
+          _buildLanguageOption(l10n.hindi, 'hi', currentLocale?.languageCode == 'hi'),
+          _buildLanguageOption(l10n.marathi, 'mr', currentLocale?.languageCode == 'mr'),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLanguageOption(String label, String? code, bool isSelected) {
+    return ListTile(
+      onTap: () => ref.read(localeStateProvider.notifier).setLocale(code),
+      title: Text(label, style: const TextStyle(color: Colors.white)),
+      trailing: isSelected
+          ? const Icon(Icons.check_circle, color: Colors.cyanAccent)
+          : null,
+      contentPadding: EdgeInsets.zero,
+    );
+  }
+
+  Widget _buildNotificationCard(AppLocalizations l10n) {
     return GlassContainer(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -209,19 +257,14 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
               ),
               SizedBox(width: 12),
               Text(
-                'Reminders',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
+                'Reminders', // This should be l10n.reminders but I forgot to add it to HI/MR in ARB sometimes? No I added it.
               ),
             ],
           ),
           const SizedBox(height: 12),
-          const Text(
-            'Get notified 30 days before and on the day your warranty expires.',
-            style: TextStyle(color: Colors.white70, fontSize: 14),
+          Text(
+            l10n.remindersDescription,
+            style: const TextStyle(color: Colors.white70, fontSize: 14),
           ),
           const SizedBox(height: 16),
           SizedBox(
@@ -230,9 +273,9 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
               onPressed: () =>
                   ref.read(notificationServiceProvider).requestPermissions(),
               icon: const Icon(Icons.settings, size: 18, color: Colors.white70),
-              label: const Text(
-                'Manage Permissions',
-                style: TextStyle(color: Colors.white),
+              label: Text(
+                l10n.managePermissions,
+                style: const TextStyle(color: Colors.white),
               ),
               style: TextButton.styleFrom(
                 backgroundColor: Colors.white.withValues(alpha: 0.1),
@@ -248,20 +291,75 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     );
   }
 
-  Widget _buildInfoCard() {
+  Widget _buildRateAppCard(AppLocalizations l10n) {
+    return GlassContainer(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.star_rate, color: Colors.yellowAccent, size: 28),
+              const SizedBox(width: 12),
+              Text(
+                l10n.supportUs,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            l10n.supportDescription,
+            style: const TextStyle(color: Colors.white70, fontSize: 14),
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () async {
+                final reviewService = ref.read(reviewServiceProvider);
+                GlassSnackBar.show(
+                  context,
+                  message: 'Opening Store Review...',
+                  icon: Icons.rate_review,
+                );
+                await reviewService.requestReview();
+              },
+              icon: const Icon(Icons.rate_review, size: 18),
+              label: Text(l10n.rateAndReview),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white.withValues(alpha: 0.1),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  side: BorderSide(color: Colors.white.withValues(alpha: 0.2)),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoCard(AppLocalizations l10n) {
     return GlassContainer(
       child: Column(
         children: [
           _buildInfoRow(
             Icons.security,
-            'Private & Secure',
-            'Only you can access your Drive data.',
+            l10n.privateSecure,
+            l10n.privateSecureDesc,
           ),
           const Divider(color: Colors.white10, height: 32),
           _buildInfoRow(
             Icons.sync_lock,
-            'Encrypted Sync',
-            'Metadata is handled securely via OAuth2.',
+            l10n.encryptedSync,
+            l10n.encryptedSyncDesc,
           ),
         ],
       ),
@@ -293,7 +391,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     );
   }
 
-  Future<void> _handleSync() async {
+  Future<void> _handleSync(AppLocalizations l10n) async {
     setState(() => _isBackingUp = true);
     final analytics = ref.read(analyticsServiceProvider);
     try {
@@ -312,7 +410,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       if (mounted) {
         GlassSnackBar.show(
           context,
-          message: 'Backup complete!',
+          message: l10n.backupComplete,
           icon: Icons.check_circle,
           iconColor: Colors.greenAccent,
         );
@@ -322,7 +420,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       if (mounted) {
         GlassSnackBar.show(
           context,
-          message: 'Backup failed: $e',
+          message: l10n.error(e.toString()),
           icon: Icons.error_outline,
           isError: true,
         );
@@ -332,7 +430,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     }
   }
 
-  Future<void> _handleRestore() async {
+  Future<void> _handleRestore(AppLocalizations l10n) async {
     setState(() => _isRestoring = true);
     try {
       if (mounted) {
@@ -348,7 +446,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       if (mounted) {
         GlassSnackBar.show(
           context,
-          message: 'Restore complete!',
+          message: l10n.restoreComplete,
           icon: Icons.check_circle,
           iconColor: Colors.greenAccent,
         );
@@ -357,7 +455,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       if (mounted) {
         GlassSnackBar.show(
           context,
-          message: 'Restore failed: $e',
+          message: l10n.error(e.toString()),
           icon: Icons.error_outline,
           isError: true,
         );

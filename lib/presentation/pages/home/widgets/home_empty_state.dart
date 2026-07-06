@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:snap_warranty/l10n/app_localizations.dart';
 import '../../../state/warranty_provider.dart';
 import '../../../widgets/glass/glass_container.dart';
 
@@ -10,6 +11,7 @@ class HomeEmptyState extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final query = ref.watch(searchQueryProvider);
     final isSearching = query.isNotEmpty;
+    final l10n = AppLocalizations.of(context)!;
 
     return SliverFillRemaining(
       hasScrollBody: false,
@@ -29,7 +31,7 @@ class HomeEmptyState extends ConsumerWidget {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    isSearching ? 'No results found' : 'No warranties yet',
+                    isSearching ? 'No results found' : l10n.noWarranties,
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 18,
@@ -40,7 +42,7 @@ class HomeEmptyState extends ConsumerWidget {
                   Text(
                     isSearching
                         ? 'Try a different search term'
-                        : 'Add a receipt or PDF to get started',
+                        : l10n.scanFirst,
                     style: TextStyle(
                       color: Colors.white.withValues(alpha: 0.6),
                     ),

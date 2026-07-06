@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:snap_warranty/l10n/app_localizations.dart';
 
 import '../../../core/services/update_manager.dart';
 import '../../state/warranty_provider.dart';
@@ -59,6 +60,7 @@ class _HomePageState extends ConsumerState<HomePage> {
   Widget build(BuildContext context) {
     final warrantiesAsync = ref.watch(filteredWarrantiesProvider);
     final isScanning = ref.watch(documentScanningProvider);
+    final l10n = AppLocalizations.of(context)!;
 
     // Listen for search query to log it (debounced logic should be handled by caller usually,
     // but we can at least log when it's not empty and changes significant)
@@ -74,7 +76,7 @@ class _HomePageState extends ConsumerState<HomePage> {
         error: (error, stackTrace) {
           GlassSnackBar.show(
             context,
-            message: 'Error: $error',
+            message: l10n.error(error.toString()),
             icon: Icons.error_outline,
             isError: true,
           );
@@ -118,7 +120,7 @@ class _HomePageState extends ConsumerState<HomePage> {
           if (isScanning) const ScanningOverlay(),
         ],
       ),
-      floatingActionButton: _buildFloatingActionButton(context),
+      floatingActionButton: _buildFloatingActionButton(context, l10n),
       bottomNavigationBar: _isBannerAdLoaded
           ? SafeArea(
               child: SizedBox(
@@ -131,12 +133,18 @@ class _HomePageState extends ConsumerState<HomePage> {
     );
   }
 
-  Widget _buildFloatingActionButton(BuildContext context) {
+  Widget _buildFloatingActionButton(
+    BuildContext context,
+    AppLocalizations l10n,
+  ) {
     return FloatingActionButton.extended(
-      onPressed: () => _showImageSourceSheet(context),
+      onPressed: () => _showImageSourceSheet(context, l10n),
       backgroundColor: Colors.white.withValues(alpha: 0.2),
       elevation: 0,
-      label: const Text('Add Document', style: TextStyle(color: Colors.white)),
+      label: Text(
+        l10n.addDocument,
+        style: const TextStyle(color: Colors.white),
+      ),
       icon: const Icon(Icons.add, color: Colors.white),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
@@ -145,7 +153,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     );
   }
 
-  void _showImageSourceSheet(BuildContext context) {
+  void _showImageSourceSheet(BuildContext context, AppLocalizations l10n) {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -158,9 +166,9 @@ class _HomePageState extends ConsumerState<HomePage> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text(
-              'Select Source',
-              style: TextStyle(
+            Text(
+              l10n.selectSource,
+              style: const TextStyle(
                 color: Colors.white,
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -173,19 +181,19 @@ class _HomePageState extends ConsumerState<HomePage> {
                 _buildSourceOption(
                   context: context,
                   icon: Icons.camera_alt,
-                  label: 'Camera',
+                  label: l10n.camera,
                   onTap: () => _pickImage(ImageSource.camera, context),
                 ),
                 _buildSourceOption(
                   context: context,
                   icon: Icons.photo_library,
-                  label: 'Gallery',
+                  label: l10n.gallery,
                   onTap: () => _pickImage(ImageSource.gallery, context),
                 ),
                 _buildSourceOption(
                   context: context,
                   icon: Icons.picture_as_pdf,
-                  label: 'PDF',
+                  label: l10n.pdf,
                   onTap: () => _pickPdf(context),
                 ),
               ],
@@ -229,6 +237,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     final image = await picker.pickImage(source: source);
     if (image != null) {
       final adService = ref.read(adServiceProvider);
+      final reviewService = ref.read(reviewServiceProvider);
       final analytics = ref.read(analyticsServiceProvider);
       try {
         await analytics.logScanStarted(source.name);
@@ -238,6 +247,8 @@ class _HomePageState extends ConsumerState<HomePage> {
             .scanAndAddWarranty(File(image.path));
         // Increment ad counter after successful addition
         await adService.incrementAdditionCounter();
+        // Check and request review
+        await reviewService.checkAndRequestReview();
         await analytics.logScanCompleted('Unknown (Scanned)', true);
       } catch (e) {
         await analytics.logScanCompleted('Unknown (Failed)', false);
@@ -258,6 +269,7 @@ class _HomePageState extends ConsumerState<HomePage> {
 
     if (result != null && result.files.single.path != null) {
       final adService = ref.read(adServiceProvider);
+      final reviewService = ref.read(reviewServiceProvider);
       final analytics = ref.read(analyticsServiceProvider);
       try {
         await analytics.logScanStarted('pdf');
@@ -267,6 +279,8 @@ class _HomePageState extends ConsumerState<HomePage> {
             .scanAndAddWarranty(File(result.files.single.path!));
         // Increment ad counter after successful addition
         await adService.incrementAdditionCounter();
+        // Check and request review
+        await reviewService.checkAndRequestReview();
         await analytics.logScanCompleted('Unknown (PDF)', true);
       } catch (e) {
         await analytics.logScanCompleted('Unknown (PDF Failed)', false);

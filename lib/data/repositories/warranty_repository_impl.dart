@@ -12,7 +12,7 @@ import 'package:path_provider/path_provider.dart';
 import '../../core/error/exceptions.dart';
 
 class WarrantyRepositoryImpl implements WarrantyRepository {
-  final GeminiRemoteDataSource remoteDataSource;
+  final GeminiRemoteDataSource? remoteDataSource;
   final WarrantyDao localDao;
   final DriveSyncDataSource driveSyncDataSource;
 
@@ -24,7 +24,12 @@ class WarrantyRepositoryImpl implements WarrantyRepository {
 
   @override
   Future<WarrantyItem> extractWarrantyFromImage(File receiptImage) async {
-    final jsonMap = await remoteDataSource.extractDataFromReceipt(receiptImage);
+    if (remoteDataSource == null) {
+      throw Exception(
+        'AI Service is not configured. Please ensure GEMINI_API_KEY is set in Remote Config.',
+      );
+    }
+    final jsonMap = await remoteDataSource!.extractDataFromReceipt(receiptImage);
 
     // AI Validation Check
     final isValid = jsonMap['isReceiptOrWarranty'] as bool? ?? false;

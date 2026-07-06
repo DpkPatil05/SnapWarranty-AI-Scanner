@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:snap_warranty/l10n/app_localizations.dart';
 import '../../settings/settings_page.dart';
 import 'home_search_bar.dart';
 
@@ -7,6 +8,7 @@ class HomeAppBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return SliverPadding(
       padding: const EdgeInsets.all(24.0),
       sliver: SliverToBoxAdapter(
@@ -19,9 +21,9 @@ class HomeAppBar extends StatelessWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'SnapWarranty',
-                      style: TextStyle(
+                    Text(
+                      l10n.appTitle,
+                      style: const TextStyle(
                         fontSize: 32,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,

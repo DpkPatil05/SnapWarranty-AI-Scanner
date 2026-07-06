@@ -2,7 +2,6 @@ import 'dart:developer' as dev;
 import 'dart:io';
 
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'package:in_app_review/in_app_review.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../domain/services/ad_service_interface.dart';
@@ -19,7 +18,6 @@ class AdService implements IAdService {
 
   InterstitialAd? _interstitialAd;
   bool _isInterstitialAdLoading = false;
-  final InAppReview _inAppReview = InAppReview.instance;
 
   // Counter keys for persistence mapping
   static const Map<AdTriggerType, String> _counterKeys = {
@@ -68,11 +66,6 @@ class AdService implements IAdService {
 
     dev.log('${type.name} count: $count', name: 'AdService');
 
-    // Handle In-App Review on 3rd file addition
-    if (type == AdTriggerType.fileAddition && count == 3) {
-      _requestReview();
-    }
-
     final frequency = RemoteConfigService.instance.interstitialAdFrequency;
 
     if (count % frequency == 0) {
@@ -81,17 +74,6 @@ class AdService implements IAdService {
         name: 'AdService',
       );
       showInterstitialAd();
-    }
-  }
-
-  Future<void> _requestReview() async {
-    try {
-      if (await _inAppReview.isAvailable()) {
-        dev.log('Requesting In-App Review...', name: 'AdService');
-        await _inAppReview.requestReview();
-      }
-    } catch (e) {
-      dev.log('In-App Review failed: $e', name: 'AdService');
     }
   }
 

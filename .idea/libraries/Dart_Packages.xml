@@ -492,6 +492,13 @@
             </list>
           </value>
         </entry>
+        <entry key="flutter_localizations">
+          <value>
+            <list>
+              <option value="C:/flutter/packages/flutter_localizations/lib" />
+            </list>
+          </value>
+        </entry>
         <entry key="flutter_native_splash">
           <value>
             <list>
@@ -775,7 +782,7 @@
         <entry key="intl">
           <value>
             <list>
-              <option value="$USER_HOME$/AppData/Local/Pub/Cache/hosted/pub.dev/intl-0.19.0/lib" />
+              <option value="$USER_HOME$/AppData/Local/Pub/Cache/hosted/pub.dev/intl-0.20.2/lib" />
             </list>
           </value>
         </entry>
@@ -1631,7 +1638,7 @@
       <root url="file://$USER_HOME$/AppData/Local/Pub/Cache/hosted/pub.dev/in_app_review-2.0.12/lib" />
       <root url="file://$USER_HOME$/AppData/Local/Pub/Cache/hosted/pub.dev/in_app_review_platform_interface-2.0.5/lib" />
       <root url="file://$USER_HOME$/AppData/Local/Pub/Cache/hosted/pub.dev/in_app_update-5.0.0/lib" />
-      <root url="file://$USER_HOME$/AppData/Local/Pub/Cache/hosted/pub.dev/intl-0.19.0/lib" />
+      <root url="file://$USER_HOME$/AppData/Local/Pub/Cache/hosted/pub.dev/intl-0.20.2/lib" />
       <root url="file://$USER_HOME$/AppData/Local/Pub/Cache/hosted/pub.dev/io-1.0.5/lib" />
       <root url="file://$USER_HOME$/AppData/Local/Pub/Cache/hosted/pub.dev/jni-1.0.0/lib" />
       <root url="file://$USER_HOME$/AppData/Local/Pub/Cache/hosted/pub.dev/jni_flutter-1.0.1/lib" />
@@ -1739,6 +1746,7 @@
       <root url="file://$USER_HOME$/AppData/Local/Pub/Cache/hosted/pub.dev/yaml-3.1.3/lib" />
       <root url="file://C:/flutter/bin/cache/pkg/sky_engine/lib" />
       <root url="file://C:/flutter/packages/flutter/lib" />
+      <root url="file://C:/flutter/packages/flutter_localizations/lib" />
       <root url="file://C:/flutter/packages/flutter_test/lib" />
       <root url="file://C:/flutter/packages/flutter_web_plugins/lib" />
     </CLASSES>

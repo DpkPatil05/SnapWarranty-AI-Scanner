@@ -1,16 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:snap_warranty/l10n/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'pages/home/home_page.dart';
 import 'pages/walkthrough/walkthrough_page.dart';
+import 'state/locale_provider.dart';
 
-class SnapWarrantyApp extends StatelessWidget {
+class SnapWarrantyApp extends ConsumerWidget {
   const SnapWarrantyApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final appLocale = ref.watch(localeStateProvider);
+
     return MaterialApp(
-      title: 'SnapWarranty: AI Scanner',
+      title: 'SnapWarranty',
       debugShowCheckedModeBanner: false,
+      locale: appLocale,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
       theme: ThemeData(
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(
