@@ -54,7 +54,9 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
         title: Text(
           l10n.vaultSettings,
           style: const TextStyle(
-              color: Colors.white, fontWeight: FontWeight.bold),
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
       body: Stack(
@@ -101,7 +103,10 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
           Row(
             children: [
               const Icon(
-                  Icons.cloud_upload, color: Colors.blueAccent, size: 28),
+                Icons.cloud_upload,
+                color: Colors.blueAccent,
+                size: 28,
+              ),
               const SizedBox(width: 12),
               Text(
                 l10n.cloudBackup,
@@ -158,7 +163,10 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
           Row(
             children: [
               const Icon(
-                  Icons.cloud_download, color: Colors.greenAccent, size: 28),
+                Icons.cloud_download,
+                color: Colors.greenAccent,
+                size: 28,
+              ),
               const SizedBox(width: 12),
               Text(
                 l10n.restoreVault,
@@ -200,7 +208,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                     )
                   : const Icon(Icons.settings_backup_restore),
               label: Text(
-                  _isRestoring ? l10n.restoring : l10n.restoreFromDrive),
+                _isRestoring ? l10n.restoring : l10n.restoreFromDrive,
+              ),
             ),
           ),
         ],
@@ -260,16 +269,36 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     final currentLocale = ref.watch(localeStateProvider);
     showDialog(
       context: context,
-      builder: (context) =>
-          AlertDialog(
-            backgroundColor: const Color(0xFF1E1B4B),
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(24)),
-            title: Text(
-                l10n.language, style: const TextStyle(color: Colors.white)),
-            content: Column(
+      builder: (context) => Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 40),
+          child: GlassContainer(
+            borderRadius: 32,
+            child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.language,
+                        color: Colors.cyanAccent,
+                        size: 24,
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        l10n.language,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Divider(color: Colors.white10),
                 _buildLanguageDialogOption(
                   context,
                   l10n.systemDefault,
@@ -294,26 +323,41 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                   'mr',
                   currentLocale?.languageCode == 'mr',
                 ),
+                const SizedBox(height: 16),
               ],
             ),
           ),
+        ),
+      ),
     );
   }
 
-  Widget _buildLanguageDialogOption(BuildContext context,
-      String label,
-      String? code,
-      bool isSelected,) {
-    return ListTile(
-      onTap: () {
-        ref.read(localeStateProvider.notifier).setLocale(code);
-        Navigator.pop(context);
-      },
-      title: Text(label, style: const TextStyle(color: Colors.white)),
-      trailing: isSelected
-          ? const Icon(Icons.check_circle, color: Colors.cyanAccent)
-          : null,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+  Widget _buildLanguageDialogOption(
+    BuildContext context,
+    String label,
+    String? code,
+    bool isSelected,
+  ) {
+    return Material(
+      color: Colors.transparent,
+      child: ListTile(
+        onTap: () {
+          ref.read(localeStateProvider.notifier).setLocale(code);
+          Navigator.pop(context);
+        },
+        title: Text(
+          label,
+          style: TextStyle(
+            color: isSelected ? Colors.white : Colors.white70,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+          ),
+        ),
+        trailing: isSelected
+            ? const Icon(Icons.check_circle, color: Colors.cyanAccent, size: 20)
+            : null,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 24),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      ),
     );
   }
 
@@ -330,9 +374,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                 size: 28,
               ),
               SizedBox(width: 12),
-              Text(
-                'Reminders', // This should be l10n.reminders but I forgot to add it to HI/MR in ARB sometimes? No I added it.
-              ),
+              Text('Reminders'),
             ],
           ),
           const SizedBox(height: 12),
