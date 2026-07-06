@@ -333,6 +333,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Marathi'**
   String get marathi;
+
+  /// No description provided for @expires.
+  ///
+  /// In en, this message translates to:
+  /// **'Expires: {date}'**
+  String expires(String date);
+
+  /// No description provided for @expiryNotSet.
+  ///
+  /// In en, this message translates to:
+  /// **'Expiry not set'**
+  String get expiryNotSet;
+
+  /// No description provided for @product.
+  ///
+  /// In en, this message translates to:
+  /// **'Product'**
+  String get product;
+
+  /// No description provided for @purchaseDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Purchase Date'**
+  String get purchaseDate;
+
+  /// No description provided for @warrantyDuration.
+  ///
+  /// In en, this message translates to:
+  /// **'Warranty Duration'**
+  String get warrantyDuration;
+
+  /// No description provided for @expirationDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Expiration Date'**
+  String get expirationDate;
+
+  /// No description provided for @months.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} Months'**
+  String months(int count);
+
+  /// No description provided for @setExpirationDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Set Expiration Date'**
+  String get setExpirationDate;
+
+  /// No description provided for @durationNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Duration not found in document'**
+  String get durationNotFound;
+
+  /// No description provided for @expirationUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Expiration updated!'**
+  String get expirationUpdated;
+
+  /// No description provided for @deleteWarranty.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Warranty?'**
+  String get deleteWarranty;
+
+  /// No description provided for @confirmRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to remove {product} from your vault?'**
+  String confirmRemove(String product);
 }
 
 class _AppLocalizationsDelegate

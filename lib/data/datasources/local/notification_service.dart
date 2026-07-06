@@ -1,8 +1,10 @@
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:timezone/timezone.dart' as tz;
-import 'package:timezone/data/latest_all.dart' as tz;
 import 'dart:developer' as dev;
+
 import 'package:flutter/services.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:timezone/data/latest_all.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
+
 import '../../../domain/services/notification_service_interface.dart';
 
 class NotificationService implements INotificationService {
@@ -38,7 +40,7 @@ class NotificationService implements INotificationService {
     await _notifications.initialize(
       settings: initSettings,
       onDidReceiveNotificationResponse: (details) {
-        dev.log('Notification clicked: \${details.payload}');
+        dev.log('Notification clicked: ${details.payload}');
       },
     );
   }
@@ -74,7 +76,7 @@ class NotificationService implements INotificationService {
       await _schedule(
         id: notificationId,
         title: 'Warranty Expiring Soon',
-        body: 'Your warranty for "\$productName" expires in 30 days!',
+        body: 'Your warranty for "$productName" expires in 30 days!',
         scheduledDate: reminderDate,
       );
     }
@@ -83,7 +85,7 @@ class NotificationService implements INotificationService {
       await _schedule(
         id: notificationId + 1,
         title: 'Warranty Expired',
-        body: 'The warranty for "\$productName" expires today!',
+        body: 'The warranty for "$productName" expires today!',
         scheduledDate: expirationDate,
       );
     }

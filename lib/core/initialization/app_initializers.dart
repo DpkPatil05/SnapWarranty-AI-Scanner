@@ -7,7 +7,6 @@ import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 import '../../data/datasources/local/notification_service.dart';
-import '../../data/datasources/remote/drive/drive_sync_datasource.dart';
 import '../../firebase_options.dart';
 import '../ads/ad_service.dart';
 import '../config/remote_config_service.dart';
@@ -31,16 +30,13 @@ class AppInitializers {
         _initCompleter.complete();
       }
 
-      // 2. Restore Drive Session (Persistent Auth)
-      await _initDriveAuth();
-
-      // 3. Initialize Local Notification System
+      // 2. Initialize Local Notification System
       await _initNotifications();
 
-      // 4. Initialize Mobile Ads
+      // 3. Initialize Mobile Ads
       await _initMobileAds();
 
-      // 5. Initialize Remote Config
+      // 4. Initialize Remote Config
       await _initRemoteConfig();
 
       dev.log('Boot sequence complete!', name: 'AppInitializers');
@@ -69,11 +65,6 @@ class AppInitializers {
       providerAndroid: AndroidPlayIntegrityProvider(),
       providerApple: AppleAppAttestProvider(),
     );
-  }
-
-  static Future<void> _initDriveAuth() async {
-    dev.log('Restoring Drive session...', name: 'AppInitializers');
-    await DriveSyncDataSource.instance.restoreSession();
   }
 
   static Future<void> _initNotifications() async {

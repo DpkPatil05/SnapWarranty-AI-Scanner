@@ -1,5 +1,6 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
+
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -132,4 +133,46 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get marathi => 'Marathi';
+
+  @override
+  String expires(String date) {
+    return 'Expires: $date';
+  }
+
+  @override
+  String get expiryNotSet => 'Expiry not set';
+
+  @override
+  String get product => 'Product';
+
+  @override
+  String get purchaseDate => 'Purchase Date';
+
+  @override
+  String get warrantyDuration => 'Warranty Duration';
+
+  @override
+  String get expirationDate => 'Expiration Date';
+
+  @override
+  String months(int count) {
+    return '$count Months';
+  }
+
+  @override
+  String get setExpirationDate => 'Set Expiration Date';
+
+  @override
+  String get durationNotFound => 'Duration not found in document';
+
+  @override
+  String get expirationUpdated => 'Expiration updated!';
+
+  @override
+  String get deleteWarranty => 'Delete Warranty?';
+
+  @override
+  String confirmRemove(String product) {
+    return 'Are you sure you want to remove $product from your vault?';
+  }
 }

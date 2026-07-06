@@ -1,5 +1,6 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
+
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -135,4 +136,46 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get marathi => 'मराठी';
+
+  @override
+  String expires(String date) {
+    return 'समाप्ति: $date';
+  }
+
+  @override
+  String get expiryNotSet => 'समाप्ति निर्धारित नहीं';
+
+  @override
+  String get product => 'उत्पाद';
+
+  @override
+  String get purchaseDate => 'खरीद की तारीख';
+
+  @override
+  String get warrantyDuration => 'वॉरंटी अवधि';
+
+  @override
+  String get expirationDate => 'समाप्ति तिथि';
+
+  @override
+  String months(int count) {
+    return '$count महीने';
+  }
+
+  @override
+  String get setExpirationDate => 'समाप्ति तिथि निर्धारित करें';
+
+  @override
+  String get durationNotFound => 'दस्तावेज़ में अवधि नहीं मिली';
+
+  @override
+  String get expirationUpdated => 'समाप्ति अद्यतन की गई!';
+
+  @override
+  String get deleteWarranty => 'वॉरंटी हटाएं?';
+
+  @override
+  String confirmRemove(String product) {
+    return 'क्या आप वाकई अपने वॉल्ट से $product हटाना चाहते हैं?';
+  }
 }
