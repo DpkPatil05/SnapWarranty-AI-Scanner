@@ -3,7 +3,7 @@ description: "A cross-platform Flutter application architected using strict Clea
 
 publish_to: 'none'
 
-version: 1.0.2+6
+version: 1.0.2+7
 
 environment:
   sdk: ^3.12.1
@@ -58,7 +58,7 @@ dependencies:
   flutter_local_notifications: ^22.0.1
   timezone: ^0.11.1
   flutter_native_splash: ^2.4.8
-  in_app_update: ^4.2.5
+  in_app_update: ^5.0.0
 
 dev_dependencies:
   flutter_test:

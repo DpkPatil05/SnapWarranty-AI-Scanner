@@ -14,11 +14,19 @@
       },
       "oauth_client": [
         {
-          "client_id": "1077184882408-kr4b93q3jmual5j1ae7rnh3f3o86e1oe.apps.googleusercontent.com",
+          "client_id": "1077184882408-4m36959i3a4gcg5kgc7ren2093tjrmat.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.deepx.snap_warranty",
-            "certificate_hash": "04e255a3b31e221aa9789679b68dc471b31dfb91"
+            "certificate_hash": "25255131f5252cb4ba9e1083a1e6e8d533a8a8b2"
+          }
+        },
+        {
+          "client_id": "1077184882408-u1t9jjd6in0gmkrf9qtivi3tv81ii2b7.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.deepx.snap_warranty",
+            "certificate_hash": "9b4c25ea6545f9f5802beec98f28d0bc7141c321"
           }
         },
         {
