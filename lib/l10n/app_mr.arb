@@ -1,6 +1,7 @@
 {
   "@@locale": "mr",
   "appTitle": "स्नैपवॉरंटी",
+  "appSubtitle": "तुमची डिजिटल वॉरंटी व्हॉल्ट",
   "addDocument": "दस्तऐवज जोडा",
   "vaultSettings": "वॉल्ट सेटिंग्स",
   "cloudBackup": "क्लाउड बॅकअप",

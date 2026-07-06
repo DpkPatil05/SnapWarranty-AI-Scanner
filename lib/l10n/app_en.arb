@@ -1,6 +1,7 @@
 {
   "@@locale": "en",
   "appTitle": "SnapWarranty",
+  "appSubtitle": "Your digital warranty vault",
   "addDocument": "Add Document",
   "vaultSettings": "Vault Settings",
   "cloudBackup": "Cloud Backup",

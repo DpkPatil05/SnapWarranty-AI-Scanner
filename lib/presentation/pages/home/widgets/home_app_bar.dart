@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:snap_warranty/l10n/app_localizations.dart';
+
 import '../../settings/settings_page.dart';
 import 'home_search_bar.dart';
 
@@ -31,7 +32,7 @@ class HomeAppBar extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      'Your digital warranty vault',
+                      l10n.appSubtitle,
                       style: TextStyle(
                         fontSize: 16,
                         color: Colors.white.withValues(alpha: 0.7),

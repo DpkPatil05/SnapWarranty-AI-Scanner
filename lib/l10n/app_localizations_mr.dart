@@ -12,6 +12,9 @@ class AppLocalizationsMr extends AppLocalizations {
   String get appTitle => 'स्नैपवॉरंटी';
 
   @override
+  String get appSubtitle => 'तुमची डिजिटल वॉरंटी व्हॉल्ट';
+
+  @override
   String get addDocument => 'दस्तऐवज जोडा';
 
   @override
