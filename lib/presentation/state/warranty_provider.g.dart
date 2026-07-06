@@ -56,11 +56,11 @@ final geminiDataSourceProvider = GeminiDataSourceProvider._();
 final class GeminiDataSourceProvider
     extends
         $FunctionalProvider<
-          GeminiRemoteDataSource,
-          GeminiRemoteDataSource,
-          GeminiRemoteDataSource
+          GeminiRemoteDataSource?,
+          GeminiRemoteDataSource?,
+          GeminiRemoteDataSource?
         >
-    with $Provider<GeminiRemoteDataSource> {
+    with $Provider<GeminiRemoteDataSource?> {
   GeminiDataSourceProvider._()
     : super(
         from: null,
@@ -77,25 +77,25 @@ final class GeminiDataSourceProvider
 
   @$internal
   @override
-  $ProviderElement<GeminiRemoteDataSource> $createElement(
+  $ProviderElement<GeminiRemoteDataSource?> $createElement(
     $ProviderPointer pointer,
   ) => $ProviderElement(pointer);
 
   @override
-  GeminiRemoteDataSource create(Ref ref) {
+  GeminiRemoteDataSource? create(Ref ref) {
     return geminiDataSource(ref);
   }
 
   /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(GeminiRemoteDataSource value) {
+  Override overrideWithValue(GeminiRemoteDataSource? value) {
     return $ProviderOverride(
       origin: this,
-      providerOverride: $SyncValueProvider<GeminiRemoteDataSource>(value),
+      providerOverride: $SyncValueProvider<GeminiRemoteDataSource?>(value),
     );
   }
 }
 
-String _$geminiDataSourceHash() => r'cb7f2cae3d3b97a9152581787115533a527ca097';
+String _$geminiDataSourceHash() => r'055f8a89bbf80dbefbc19cb8e4164ff75ca807a1';
 
 @ProviderFor(warrantyDao)
 final warrantyDaoProvider = WarrantyDaoProvider._();
@@ -306,7 +306,7 @@ final class WarrantyListProvider
   WarrantyList create() => WarrantyList();
 }
 
-String _$warrantyListHash() => r'3347ea07eaf71e0ac8495ae62cc7e85107c8531c';
+String _$warrantyListHash() => r'68ecfc02e1e53032ff6b64b79b5c479071709de7';
 
 abstract class _$WarrantyList extends $AsyncNotifier<List<WarrantyItem>> {
   FutureOr<List<WarrantyItem>> build();

@@ -16,6 +16,8 @@ import '../../core/config/remote_config_service.dart';
 import '../../domain/analytics/analytics_service_interface.dart';
 import '../../domain/services/ad_service_interface.dart';
 import '../../domain/services/notification_service_interface.dart';
+import '../../domain/services/review_service_interface.dart';
+import '../../core/services/review_service.dart';
 
 part 'warranty_provider.g.dart';
 
@@ -29,10 +31,10 @@ AppDatabase database(Ref ref) {
 
 // --- 2. Data Sources ---
 @riverpod
-GeminiRemoteDataSource geminiDataSource(Ref ref) {
+GeminiRemoteDataSource? geminiDataSource(Ref ref) {
   final apiKey = RemoteConfigService.instance.geminiApiKey;
   if (apiKey.isEmpty) {
-    throw Exception('GEMINI_API_KEY not found in Remote Config');
+    return null;
   }
   return GeminiRemoteDataSource(apiKey: apiKey);
 }
@@ -56,6 +58,7 @@ INotificationService notificationService(Ref ref) {
 
 // --- Ad & Analytics Providers ---
 final adServiceProvider = Provider<IAdService>((ref) => AdService.instance);
+final reviewServiceProvider = Provider<IReviewService>((ref) => ReviewService.instance);
 final analyticsServiceProvider = Provider<IAnalyticsService>(
   (ref) => AnalyticsService.instance,
 );
