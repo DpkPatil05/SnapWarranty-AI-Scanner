@@ -1,6 +1,9 @@
 import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:snap_warranty/l10n/app_localizations.dart';
+
 import '../../../../domain/entities/warranty_item.dart';
 import '../../../state/warranty_provider.dart';
 import '../../../widgets/glass/glass_container.dart';
@@ -14,6 +17,7 @@ class WarrantyListView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     return SliverPadding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       sliver: SliverList(
@@ -40,7 +44,7 @@ class WarrantyListView extends ConsumerWidget {
                 ref.read(warrantyListProvider.notifier).deleteWarranty(item.id);
                 GlassSnackBar.show(
                   context,
-                  message: '\${item.productName} deleted',
+                  message: '${item.productName} deleted',
                   icon: Icons.delete_outline,
                 );
               },
@@ -59,7 +63,7 @@ class WarrantyListView extends ConsumerWidget {
                     children: [
                       if (item.receiptImagePath != null)
                         Hero(
-                          tag: 'receipt_\${item.id}',
+                          tag: 'receipt_${item.id}',
                           child: Container(
                             width: 60,
                             height: 60,
@@ -111,15 +115,16 @@ class WarrantyListView extends ConsumerWidget {
                             ),
                             if (item.expirationDate != null)
                               Text(
-                                'Expires: \${item.expirationDate.toString().split('
-                                ')[0]}',
+                                l10n.expires(
+                                  item.expirationDate.toString().split(' ')[0],
+                                ),
                                 style: TextStyle(
                                   color: Colors.white.withValues(alpha: 0.6),
                                 ),
                               )
                             else
                               Text(
-                                'Expiry not set',
+                                l10n.expiryNotSet,
                                 style: TextStyle(
                                   color: Colors.orangeAccent.withValues(
                                     alpha: 0.8,

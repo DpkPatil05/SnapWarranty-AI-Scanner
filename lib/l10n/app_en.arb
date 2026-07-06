@@ -52,5 +52,38 @@
   "systemDefault": "System Default",
   "english": "English",
   "hindi": "Hindi",
-  "marathi": "Marathi"
+  "marathi": "Marathi",
+  "expires": "Expires: {date}",
+  "@expires": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "expiryNotSet": "Expiry not set",
+  "product": "Product",
+  "purchaseDate": "Purchase Date",
+  "warrantyDuration": "Warranty Duration",
+  "expirationDate": "Expiration Date",
+  "months": "{count} Months",
+  "@months": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "setExpirationDate": "Set Expiration Date",
+  "durationNotFound": "Duration not found in document",
+  "expirationUpdated": "Expiration updated!",
+  "deleteWarranty": "Delete Warranty?",
+  "confirmRemove": "Are you sure you want to remove {product} from your vault?",
+  "@confirmRemove": {
+    "placeholders": {
+      "product": {
+        "type": "String"
+      }
+    }
+  }
 }

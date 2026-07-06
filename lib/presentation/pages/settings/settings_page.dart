@@ -210,6 +210,11 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
 
   Widget _buildLanguageCard(AppLocalizations l10n) {
     final currentLocale = ref.watch(localeStateProvider);
+    String currentLanguageName = l10n.systemDefault;
+    if (currentLocale?.languageCode == 'en') currentLanguageName = l10n.english;
+    if (currentLocale?.languageCode == 'hi') currentLanguageName = l10n.hindi;
+    if (currentLocale?.languageCode == 'mr') currentLanguageName = l10n.marathi;
+
     return GlassContainer(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -229,26 +234,86 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
             ],
           ),
           const SizedBox(height: 16),
-          _buildLanguageOption(l10n.systemDefault, null, currentLocale == null),
-          _buildLanguageOption(
-              l10n.english, 'en', currentLocale?.languageCode == 'en'),
-          _buildLanguageOption(
-              l10n.hindi, 'hi', currentLocale?.languageCode == 'hi'),
-          _buildLanguageOption(
-              l10n.marathi, 'mr', currentLocale?.languageCode == 'mr'),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () => _showLanguageDialog(context, l10n),
+              icon: const Icon(Icons.translate, size: 18),
+              label: Text(currentLanguageName),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white.withValues(alpha: 0.1),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  side: BorderSide(color: Colors.white.withValues(alpha: 0.2)),
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildLanguageOption(String label, String? code, bool isSelected) {
+  void _showLanguageDialog(BuildContext context, AppLocalizations l10n) {
+    final currentLocale = ref.watch(localeStateProvider);
+    showDialog(
+      context: context,
+      builder: (context) =>
+          AlertDialog(
+            backgroundColor: const Color(0xFF1E1B4B),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(24)),
+            title: Text(
+                l10n.language, style: const TextStyle(color: Colors.white)),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildLanguageDialogOption(
+                  context,
+                  l10n.systemDefault,
+                  null,
+                  currentLocale == null,
+                ),
+                _buildLanguageDialogOption(
+                  context,
+                  l10n.english,
+                  'en',
+                  currentLocale?.languageCode == 'en',
+                ),
+                _buildLanguageDialogOption(
+                  context,
+                  l10n.hindi,
+                  'hi',
+                  currentLocale?.languageCode == 'hi',
+                ),
+                _buildLanguageDialogOption(
+                  context,
+                  l10n.marathi,
+                  'mr',
+                  currentLocale?.languageCode == 'mr',
+                ),
+              ],
+            ),
+          ),
+    );
+  }
+
+  Widget _buildLanguageDialogOption(BuildContext context,
+      String label,
+      String? code,
+      bool isSelected,) {
     return ListTile(
-      onTap: () => ref.read(localeStateProvider.notifier).setLocale(code),
+      onTap: () {
+        ref.read(localeStateProvider.notifier).setLocale(code);
+        Navigator.pop(context);
+      },
       title: Text(label, style: const TextStyle(color: Colors.white)),
       trailing: isSelected
           ? const Icon(Icons.check_circle, color: Colors.cyanAccent)
           : null,
-      contentPadding: EdgeInsets.zero,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16),
     );
   }
 

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gal/gal.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:snap_warranty/l10n/app_localizations.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 
 import '../../../domain/entities/warranty_item.dart';
@@ -66,6 +67,7 @@ class _WarrantyDetailsPageState extends ConsumerState<WarrantyDetailsPage> {
   @override
   Widget build(BuildContext context) {
     final warrantiesAsync = ref.watch(warrantyListProvider);
+    final l10n = AppLocalizations.of(context)!;
 
     final currentItem =
         warrantiesAsync.maybeWhen(
@@ -102,7 +104,7 @@ class _WarrantyDetailsPageState extends ConsumerState<WarrantyDetailsPage> {
             ),
           IconButton(
             icon: const Icon(Icons.delete_outline, color: Colors.white),
-            onPressed: () => _confirmDelete(context, ref, currentItem),
+            onPressed: () => _confirmDelete(context, ref, currentItem, l10n),
             tooltip: 'Delete Warranty',
           ),
         ],
@@ -209,13 +211,13 @@ class _WarrantyDetailsPageState extends ConsumerState<WarrantyDetailsPage> {
                       children: [
                         GlassDetailRow(
                           icon: Icons.inventory_2,
-                          label: 'Product',
+                          label: l10n.product,
                           value: currentItem.productName,
                         ),
                         const Divider(color: Colors.white24, height: 32),
                         GlassDetailRow(
                           icon: Icons.calendar_today,
-                          label: 'Purchase Date',
+                          label: l10n.purchaseDate,
                           value: currentItem.purchaseDate.toString().split(
                             ' ',
                           )[0],
@@ -224,13 +226,14 @@ class _WarrantyDetailsPageState extends ConsumerState<WarrantyDetailsPage> {
                         if (currentItem.warrantyDurationMonths != null) ...[
                           InkWell(
                             onTap: () =>
-                                _selectExpiryDate(context, ref, currentItem),
+                                _selectExpiryDate(
+                                    context, ref, currentItem, l10n),
                             borderRadius: BorderRadius.circular(12),
                             child: GlassDetailRow(
                               icon: Icons.timer,
-                              label: 'Warranty Duration',
-                              value:
-                                  '${currentItem.warrantyDurationMonths} Months',
+                              label: l10n.warrantyDuration,
+                              value: l10n.months(
+                                  currentItem.warrantyDurationMonths!),
                               trailing: const Icon(
                                 Icons.edit,
                                 color: Colors.white54,
@@ -241,7 +244,7 @@ class _WarrantyDetailsPageState extends ConsumerState<WarrantyDetailsPage> {
                           const Divider(color: Colors.white24, height: 32),
                           GlassDetailRow(
                             icon: Icons.event_available,
-                            label: 'Expiration Date',
+                            label: l10n.expirationDate,
                             value: currentItem.expirationDate.toString().split(
                               ' ',
                             )[0],
@@ -250,7 +253,8 @@ class _WarrantyDetailsPageState extends ConsumerState<WarrantyDetailsPage> {
                                 : Colors.greenAccent,
                           ),
                         ] else
-                          _buildAddExpiryOption(context, ref, currentItem),
+                          _buildAddExpiryOption(
+                              context, ref, currentItem, l10n),
                       ],
                     ),
                   ),
@@ -323,17 +327,18 @@ class _WarrantyDetailsPageState extends ConsumerState<WarrantyDetailsPage> {
     BuildContext context,
     WidgetRef ref,
     WarrantyItem item,
+      AppLocalizations l10n,
   ) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: const Color(0xFF1E1B4B),
-        title: const Text(
-          'Delete Warranty?',
-          style: TextStyle(color: Colors.white),
+        title: Text(
+          l10n.deleteWarranty,
+          style: const TextStyle(color: Colors.white),
         ),
         content: Text(
-          'Are you sure you want to remove ${item.productName} from your vault?',
+          l10n.confirmRemove(item.productName),
           style: const TextStyle(color: Colors.white70),
         ),
         actions: [
@@ -346,9 +351,9 @@ class _WarrantyDetailsPageState extends ConsumerState<WarrantyDetailsPage> {
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text(
-              'Delete',
-              style: TextStyle(color: Colors.redAccent),
+            child: Text(
+              l10n.delete,
+              style: const TextStyle(color: Colors.redAccent),
             ),
           ),
         ],
@@ -361,7 +366,7 @@ class _WarrantyDetailsPageState extends ConsumerState<WarrantyDetailsPage> {
         Navigator.pop(context);
         GlassSnackBar.show(
           context,
-          message: 'Warranty deleted',
+          message: '${item.productName} deleted',
           icon: Icons.delete_forever,
         );
       }
@@ -372,11 +377,12 @@ class _WarrantyDetailsPageState extends ConsumerState<WarrantyDetailsPage> {
     BuildContext context,
     WidgetRef ref,
     WarrantyItem item,
+      AppLocalizations l10n,
   ) {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: () => _selectExpiryDate(context, ref, item),
+        onTap: () => _selectExpiryDate(context, ref, item, l10n),
         borderRadius: BorderRadius.circular(12),
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
@@ -393,16 +399,16 @@ class _WarrantyDetailsPageState extends ConsumerState<WarrantyDetailsPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Set Expiration Date',
-                      style: TextStyle(
+                    Text(
+                      l10n.setExpirationDate,
+                      style: const TextStyle(
                         color: Colors.white,
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     Text(
-                      'Duration not found in document',
+                      l10n.durationNotFound,
                       style: TextStyle(
                         color: Colors.white.withValues(alpha: 0.5),
                         fontSize: 12,
@@ -424,6 +430,7 @@ class _WarrantyDetailsPageState extends ConsumerState<WarrantyDetailsPage> {
     BuildContext context,
     WidgetRef ref,
     WarrantyItem item,
+      AppLocalizations l10n,
   ) async {
     final DateTime now = DateTime.now();
     final DateTime firstDate = item.purchaseDate;
@@ -475,7 +482,7 @@ class _WarrantyDetailsPageState extends ConsumerState<WarrantyDetailsPage> {
       if (context.mounted) {
         GlassSnackBar.show(
           context,
-          message: 'Expiration updated!',
+          message: l10n.expirationUpdated,
           icon: Icons.calendar_today,
           iconColor: Colors.greenAccent,
         );

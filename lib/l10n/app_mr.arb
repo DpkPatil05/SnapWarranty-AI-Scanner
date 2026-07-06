@@ -38,5 +38,17 @@
   "systemDefault": "सिस्टम डिफॉल्ट",
   "english": "इंग्रजी",
   "hindi": "हिंदी",
-  "marathi": "मराठी"
+  "marathi": "मराठी",
+  "expires": "समाप्ती: {date}",
+  "expiryNotSet": "समाप्ती सेट नाही",
+  "product": "उत्पादन",
+  "purchaseDate": "खरेदीची तारीख",
+  "warrantyDuration": "वॉरंटी कालावधी",
+  "expirationDate": "समाप्ती तारीख",
+  "months": "{count} महिने",
+  "setExpirationDate": "समाप्ती तारीख सेट करा",
+  "durationNotFound": "दस्तऐवजात कालावधी आढळला नाही",
+  "expirationUpdated": "समाप्ती अपडेट केली!",
+  "deleteWarranty": "वॉरंटी हटवायची?",
+  "confirmRemove": "तुमची खात्री आहे की तुम्ही तुमच्या वॉल्टमधून {product} काढू इच्छिता?"
 }
