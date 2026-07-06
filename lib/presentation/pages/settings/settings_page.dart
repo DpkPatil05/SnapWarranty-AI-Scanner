@@ -1,14 +1,16 @@
 import 'dart:developer' as developer;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:snap_warranty/l10n/app_localizations.dart';
+
+import '../../state/locale_provider.dart';
+import '../../state/warranty_provider.dart';
 import '../../widgets/glass/glass_container.dart';
 import '../../widgets/glass/glass_snackbar.dart';
 import '../../widgets/glass/liquid_glass_background.dart';
-import '../../state/warranty_provider.dart';
-import '../../state/locale_provider.dart';
 
 class SettingsPage extends ConsumerStatefulWidget {
   const SettingsPage({super.key});
@@ -51,7 +53,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
         ),
         title: Text(
           l10n.vaultSettings,
-          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          style: const TextStyle(
+              color: Colors.white, fontWeight: FontWeight.bold),
         ),
       ),
       body: Stack(
@@ -97,7 +100,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
         children: [
           Row(
             children: [
-              const Icon(Icons.cloud_upload, color: Colors.blueAccent, size: 28),
+              const Icon(
+                  Icons.cloud_upload, color: Colors.blueAccent, size: 28),
               const SizedBox(width: 12),
               Text(
                 l10n.cloudBackup,
@@ -153,7 +157,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
         children: [
           Row(
             children: [
-              const Icon(Icons.cloud_download, color: Colors.greenAccent, size: 28),
+              const Icon(
+                  Icons.cloud_download, color: Colors.greenAccent, size: 28),
               const SizedBox(width: 12),
               Text(
                 l10n.restoreVault,
@@ -194,7 +199,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                       ),
                     )
                   : const Icon(Icons.settings_backup_restore),
-              label: Text(_isRestoring ? l10n.restoring : l10n.restoreFromDrive),
+              label: Text(
+                  _isRestoring ? l10n.restoring : l10n.restoreFromDrive),
             ),
           ),
         ],
@@ -224,9 +230,12 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
           ),
           const SizedBox(height: 16),
           _buildLanguageOption(l10n.systemDefault, null, currentLocale == null),
-          _buildLanguageOption(l10n.english, 'en', currentLocale?.languageCode == 'en'),
-          _buildLanguageOption(l10n.hindi, 'hi', currentLocale?.languageCode == 'hi'),
-          _buildLanguageOption(l10n.marathi, 'mr', currentLocale?.languageCode == 'mr'),
+          _buildLanguageOption(
+              l10n.english, 'en', currentLocale?.languageCode == 'en'),
+          _buildLanguageOption(
+              l10n.hindi, 'hi', currentLocale?.languageCode == 'hi'),
+          _buildLanguageOption(
+              l10n.marathi, 'mr', currentLocale?.languageCode == 'mr'),
         ],
       ),
     );

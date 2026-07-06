@@ -45,6 +45,7 @@ String _$localeStateHash() => r'c72a9d2eeb6be3f3694c14b770a7ccb89408e304';
 
 abstract class _$LocaleState extends $Notifier<Locale?> {
   Locale? build();
+
   @$mustCallSuper
   @override
   WhenComplete runBuild() {

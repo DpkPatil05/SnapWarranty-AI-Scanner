@@ -1,23 +1,25 @@
-import 'dart:io';
 import 'dart:developer' as dev;
+import 'dart:io';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import '../../domain/entities/warranty_item.dart';
-import '../../domain/repositories/warranty_repository.dart';
-import '../../data/repositories/warranty_repository_impl.dart';
-import '../../data/datasources/local/database/app_database.dart';
-import '../../data/datasources/local/dao/warranty_dao.dart';
-import '../../data/datasources/remote/gemini_remote_datasource.dart';
-import '../../data/datasources/remote/drive/drive_sync_datasource.dart';
-import '../../data/datasources/local/notification_service.dart';
+
 import '../../core/ads/ad_service.dart';
 import '../../core/analytics/analytics_service.dart';
 import '../../core/config/remote_config_service.dart';
+import '../../core/services/review_service.dart';
+import '../../data/datasources/local/dao/warranty_dao.dart';
+import '../../data/datasources/local/database/app_database.dart';
+import '../../data/datasources/local/notification_service.dart';
+import '../../data/datasources/remote/drive/drive_sync_datasource.dart';
+import '../../data/datasources/remote/gemini_remote_datasource.dart';
+import '../../data/repositories/warranty_repository_impl.dart';
 import '../../domain/analytics/analytics_service_interface.dart';
+import '../../domain/entities/warranty_item.dart';
+import '../../domain/repositories/warranty_repository.dart';
 import '../../domain/services/ad_service_interface.dart';
 import '../../domain/services/notification_service_interface.dart';
 import '../../domain/services/review_service_interface.dart';
-import '../../core/services/review_service.dart';
 
 part 'warranty_provider.g.dart';
 
@@ -58,7 +60,8 @@ INotificationService notificationService(Ref ref) {
 
 // --- Ad & Analytics Providers ---
 final adServiceProvider = Provider<IAdService>((ref) => AdService.instance);
-final reviewServiceProvider = Provider<IReviewService>((ref) => ReviewService.instance);
+final reviewServiceProvider = Provider<IReviewService>((ref) =>
+ReviewService.instance);
 final analyticsServiceProvider = Provider<IAnalyticsService>(
   (ref) => AnalyticsService.instance,
 );
