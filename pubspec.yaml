@@ -3,7 +3,7 @@ description: "A cross-platform Flutter application architected using strict Clea
 
 publish_to: 'none'
 
-version: 1.0.3+1
+version: 1.0.3+8
 
 environment:
   sdk: ^3.12.1
