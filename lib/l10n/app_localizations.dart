@@ -280,6 +280,18 @@ abstract class AppLocalizations {
   /// **'Restore complete!'**
   String get restoreComplete;
 
+  /// No description provided for @aiBusy.
+  ///
+  /// In en, this message translates to:
+  /// **'The AI service is currently under high demand. Please try again in a few moments.'**
+  String get aiBusy;
+
+  /// No description provided for @scanFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t read your document. Please make sure the photo is clear and try again.'**
+  String get scanFailed;
+
   /// No description provided for @error.
   ///
   /// In en, this message translates to:

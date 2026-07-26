@@ -1,8 +1,11 @@
 import 'dart:convert';
 import 'dart:developer' as dev;
 import 'dart:io';
+
 import 'package:google_generative_ai/google_generative_ai.dart';
+
 import '../../../core/constants/ai_prompts.dart';
+import '../../../core/error/exceptions.dart';
 
 class GeminiRemoteDataSource {
   final GenerativeModel _model;
@@ -48,14 +51,20 @@ class GeminiRemoteDataSource {
           .trim();
 
       return jsonDecode(cleanedJson) as Map<String, dynamic>;
+    } on GenerativeAIException catch (e) {
+      dev.log('Gemini AI Exception', error: e, name: 'GeminiRemote');
+      if (e.message.contains('503') || e.message.contains('UNAVAILABLE')) {
+        throw AiProcessingException('AI is currently busy', isBusy: true);
+      }
+      throw AiProcessingException('AI extraction failed: ${e.message}');
     } catch (e, st) {
       dev.log(
-        'Error in extractDataFromReceipt',
+        'Unexpected error in extractDataFromReceipt',
         name: 'GeminiRemote',
         error: e,
         stackTrace: st,
       );
-      throw Exception('Failed to extract data via Direct Gemini SDK: $e');
+      throw AiProcessingException('Failed to process document');
     }
   }
 }

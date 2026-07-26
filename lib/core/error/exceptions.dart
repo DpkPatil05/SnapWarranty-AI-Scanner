@@ -21,6 +21,12 @@ class NetworkException extends AppException {
   ]);
 }
 
+class AiProcessingException extends AppException {
+  final bool isBusy;
+
+  AiProcessingException(String message, {this.isBusy = false}) : super(message);
+}
+
 class AuthenticationException extends AppException {
   AuthenticationException([
     super.message = "Authentication failed. Please sign in again.",
