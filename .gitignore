@@ -123,3 +123,7 @@ app.*.symbols
 
 # Android Release Keystore
 android/key.properties
+
+# IntelliJ
+.idea/libraries/Dart_Packages.xml
+.idea/libraries/Flutter_Plugins.xml
