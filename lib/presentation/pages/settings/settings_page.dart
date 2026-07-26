@@ -269,63 +269,64 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     final currentLocale = ref.watch(localeStateProvider);
     showDialog(
       context: context,
-      builder: (context) => Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 40),
-          child: GlassContainer(
-            borderRadius: 32,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
-                  child: Row(
-                    children: [
-                      const Icon(
-                        Icons.language,
-                        color: Colors.cyanAccent,
-                        size: 24,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        insetPadding: const EdgeInsets.symmetric(horizontal: 40),
+        child: GlassContainer(
+          borderRadius: 32,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.language,
+                      color: Colors.cyanAccent,
+                      size: 24,
+                    ),
+                    const SizedBox(width: 12),
+                    Text(
+                      l10n.language,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        decoration: TextDecoration.none,
                       ),
-                      const SizedBox(width: 12),
-                      Text(
-                        l10n.language,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-                const Divider(color: Colors.white10),
-                _buildLanguageDialogOption(
-                  context,
-                  l10n.systemDefault,
-                  null,
-                  currentLocale == null,
-                ),
-                _buildLanguageDialogOption(
-                  context,
-                  l10n.english,
-                  'en',
-                  currentLocale?.languageCode == 'en',
-                ),
-                _buildLanguageDialogOption(
-                  context,
-                  l10n.hindi,
-                  'hi',
-                  currentLocale?.languageCode == 'hi',
-                ),
-                _buildLanguageDialogOption(
-                  context,
-                  l10n.marathi,
-                  'mr',
-                  currentLocale?.languageCode == 'mr',
-                ),
-                const SizedBox(height: 16),
-              ],
-            ),
+              ),
+              const Divider(color: Colors.white10),
+              _buildLanguageDialogOption(
+                context,
+                l10n.systemDefault,
+                null,
+                currentLocale == null,
+              ),
+              _buildLanguageDialogOption(
+                context,
+                l10n.english,
+                'en',
+                currentLocale?.languageCode == 'en',
+              ),
+              _buildLanguageDialogOption(
+                context,
+                l10n.hindi,
+                'hi',
+                currentLocale?.languageCode == 'hi',
+              ),
+              _buildLanguageDialogOption(
+                context,
+                l10n.marathi,
+                'mr',
+                currentLocale?.languageCode == 'mr',
+              ),
+              const SizedBox(height: 16),
+            ],
           ),
         ),
       ),
@@ -366,15 +367,22 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          Row(
             children: [
-              Icon(
+              const Icon(
                 Icons.notifications_active,
                 color: Colors.orangeAccent,
                 size: 28,
               ),
-              SizedBox(width: 12),
-              Text('Reminders'),
+              const SizedBox(width: 12),
+              Text(
+                l10n.reminders,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 12),
