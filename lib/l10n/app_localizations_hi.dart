@@ -1,5 +1,6 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
+
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -105,6 +106,14 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get restoreComplete => 'पुनर्स्थापना पूरी हुई!';
+
+  @override
+  String get aiBusy =>
+      'AI सेवा वर्तमान में अत्यधिक मांग में है। कृपया कुछ क्षणों बाद पुनः प्रयास करें।';
+
+  @override
+  String get scanFailed =>
+      'हम आपका दस्तावेज़ नहीं पढ़ सके। कृपया सुनिश्चित करें कि फोटो स्पष्ट है और पुनः प्रयास करें।';
 
   @override
   String error(String message) {

@@ -7,6 +7,7 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:snap_warranty/l10n/app_localizations.dart';
 
+import '../../../core/error/exceptions.dart';
 import '../../../core/services/update_manager.dart';
 import '../../state/warranty_provider.dart';
 import '../../widgets/glass/glass_snackbar.dart';
@@ -74,9 +75,17 @@ class _HomePageState extends ConsumerState<HomePage> {
     ref.listen(warrantyListProvider, (previous, next) {
       next.whenOrNull(
         error: (error, stackTrace) {
+          String message = l10n.error(error.toString());
+
+          if (error is AiProcessingException) {
+            message = error.isBusy ? l10n.aiBusy : l10n.scanFailed;
+          } else if (error is AppException) {
+            message = error.message;
+          }
+
           GlassSnackBar.show(
             context,
-            message: l10n.error(error.toString()),
+            message: message,
             icon: Icons.error_outline,
             isError: true,
           );

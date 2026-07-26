@@ -37,6 +37,8 @@
   "encryptedSyncDesc": "Metadata is handled securely via OAuth2.",
   "backupComplete": "Backup complete!",
   "restoreComplete": "Restore complete!",
+  "aiBusy": "The AI service is currently under high demand. Please try again in a few moments.",
+  "scanFailed": "We couldn't read your document. Please make sure the photo is clear and try again.",
   "error": "Error: {message}",
   "@error": {
     "placeholders": {
