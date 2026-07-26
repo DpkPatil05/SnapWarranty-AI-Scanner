@@ -1,6 +1,9 @@
 import 'dart:developer' as dev;
+
 import 'package:in_app_review/in_app_review.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
+
 import '../../domain/services/review_service_interface.dart';
 
 class ReviewService implements IReviewService {
@@ -10,6 +13,8 @@ class ReviewService implements IReviewService {
 
   final InAppReview _inAppReview = InAppReview.instance;
   static const String _reviewActionCountKey = 'review_action_count';
+  static const String _playStoreUrl =
+      'https://play.google.com/store/apps/details?id=com.deepx.snap_warranty';
 
   @override
   Future<void> requestReview() async {
@@ -32,9 +37,28 @@ class ReviewService implements IReviewService {
   @override
   Future<void> openStoreListing() async {
     try {
+      dev.log(
+        'Opening store listing via native intent...',
+        name: 'ReviewService',
+      );
       await _inAppReview.openStoreListing();
     } catch (e) {
-      dev.log('Opening store listing failed: $e', name: 'ReviewService');
+      dev.log(
+        'Native store listing failed, falling back to browser: $e',
+        name: 'ReviewService',
+      );
+      await _launchFallbackUrl();
+    }
+  }
+
+  Future<void> _launchFallbackUrl() async {
+    try {
+      final uri = Uri.parse(_playStoreUrl);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      }
+    } catch (e) {
+      dev.log('Browser fallback failed: $e', name: 'ReviewService');
     }
   }
 
