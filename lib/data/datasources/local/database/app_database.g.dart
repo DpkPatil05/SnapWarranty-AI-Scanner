@@ -598,7 +598,16 @@ class $$WarrantiesTableTableManager
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map(
+                (e) => (
+                  e.readTable<$WarrantiesTable, WarrantyEntry>(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $WarrantiesTable,
+                    WarrantyEntry
+                  >(db, table, e),
+                ),
+              )
               .toList(),
           prefetchHooksCallback: null,
         ),

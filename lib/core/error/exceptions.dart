@@ -24,7 +24,7 @@ class NetworkException extends AppException {
 class AiProcessingException extends AppException {
   final bool isBusy;
 
-  AiProcessingException(String message, {this.isBusy = false}) : super(message);
+  AiProcessingException(super.message, {this.isBusy = false});
 }
 
 class AuthenticationException extends AppException {

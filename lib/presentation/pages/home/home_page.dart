@@ -276,7 +276,7 @@ class _HomePageState extends ConsumerState<HomePage> {
       allowedExtensions: ['pdf'],
     );
 
-    if (result != null && result.files.single.path != null) {
+    if (result.isNotEmpty && result.first.path != null) {
       final adService = ref.read(adServiceProvider);
       final reviewService = ref.read(reviewServiceProvider);
       final analytics = ref.read(analyticsServiceProvider);
@@ -285,7 +285,7 @@ class _HomePageState extends ConsumerState<HomePage> {
         ref.read(documentScanningProvider.notifier).setScanning(true);
         await ref
             .read(warrantyListProvider.notifier)
-            .scanAndAddWarranty(File(result.files.single.path!));
+            .scanAndAddWarranty(File(result.first.path!));
         // Increment ad counter after successful addition
         await adService.incrementAdditionCounter();
         // Check and request review

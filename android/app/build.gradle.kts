@@ -1,5 +1,5 @@
-import java.util.Properties
 import java.io.FileInputStream
+import java.util.Properties
 
 plugins {
     id("com.android.application")
@@ -40,9 +40,7 @@ android {
         isCoreLibraryDesugaringEnabled = true
     }
 
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_17.toString()
-    }
+
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
@@ -60,12 +58,6 @@ android {
     dependencies {
         // Core library desugaring for Java 8+ API support on older devices (Required by flutter_local_notifications)
         coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
-
-        // Import the Firebase BoM
-        implementation(platform("com.google.firebase:firebase-bom:34.15.0"))
-        // Add the dependencies for Firebase products you want to use
-        implementation("com.google.firebase:firebase-analytics")
-        implementation("com.google.firebase:firebase-config") // For Force Update
 
         // Critical for Google Sign-In v7.0+ on Android 14+
         implementation("androidx.credentials:credentials:1.5.0-beta01")
@@ -95,4 +87,10 @@ android {
 
 flutter {
     source = "../.."
+}
+
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+    }
 }
